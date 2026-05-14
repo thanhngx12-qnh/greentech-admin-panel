@@ -21,6 +21,8 @@ import {
   ShareAltOutlined,
   CodeOutlined,
   InfoCircleOutlined,
+  SearchOutlined,
+  AuditOutlined,
 } from "@ant-design/icons";
 import { useForm } from "react-hook-form";
 import { SETTING_KEYS, SettingValue } from "@/types/setting";
@@ -34,17 +36,13 @@ export default function SettingsPage() {
   const { message } = AntdApp.useApp();
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-
   const { control, handleSubmit, reset } = useForm<Record<string, any>>();
 
-  // 1. Fetch toàn bộ cài đặt khi vào trang
   useEffect(() => {
     const loadSettings = async () => {
       try {
         const res = await settingService.getSettings(SETTING_KEYS);
         if (res.success) {
-          // Res data có dạng: { "hotline": { "value": "..." }, "company_name": { "vi": "..." } }
-          // Chúng ta làm phẳng dữ liệu để đưa vào react-hook-form
           const formData: any = {};
           Object.entries(res.data).forEach(([key, val]) => {
             formData[key] = val;
@@ -52,7 +50,7 @@ export default function SettingsPage() {
           reset(formData);
         }
       } catch (error) {
-        message.error("Không thể tải cấu hình hệ thống");
+        message.error("Lỗi tải cấu hình");
       } finally {
         setLoading(false);
       }
@@ -60,23 +58,21 @@ export default function SettingsPage() {
     loadSettings();
   }, [reset, message]);
 
-  // 2. Xử lý lưu cài đặt
   const onSubmit = async (data: Record<string, SettingValue>) => {
     setIsSaving(true);
     try {
       await settingService.updateMultipleSettings(data);
       message.success("Đã cập nhật toàn bộ cài đặt hệ thống");
     } catch (error: any) {
-      message.error(error.message || "Lỗi khi cập nhật");
+      message.error(error.message || "Lỗi cập nhật");
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Helper render input đa ngôn ngữ cho Setting
-  const renderI18nSetting = (key: string, label: string) => (
-    <div className="mb-6 p-4 border border-dashed border-[#E0E0E0] rounded-[4px] bg-[#fafafa]">
-      <Text strong className="block mb-3">
+  const renderI18n = (key: string, label: string, isTextArea = false) => (
+    <div className="mb-6 p-4 border border-gray-100 rounded-[4px] bg-[#fafafa]">
+      <Text strong className="block mb-3 text-[#2E7D32]">
         <GlobalOutlined /> {label}
       </Text>
       <Row gutter={16}>
@@ -85,7 +81,7 @@ export default function SettingsPage() {
             name={`${key}.vi`}
             control={control}
             label="Tiếng Việt"
-            placeholder="Nhập tiếng Việt..."
+            isTextArea={isTextArea}
           />
         </Col>
         <Col span={8}>
@@ -93,7 +89,7 @@ export default function SettingsPage() {
             name={`${key}.en`}
             control={control}
             label="English"
-            placeholder="Enter english..."
+            isTextArea={isTextArea}
           />
         </Col>
         <Col span={8}>
@@ -101,7 +97,7 @@ export default function SettingsPage() {
             name={`${key}.zh`}
             control={control}
             label="中文"
-            placeholder="输入中文..."
+            isTextArea={isTextArea}
           />
         </Col>
       </Row>
@@ -110,31 +106,39 @@ export default function SettingsPage() {
 
   const tabItems = [
     {
-      key: "general",
+      key: "branding",
       label: (
         <span className="px-4">
-          <InfoCircleOutlined /> Thông tin chung
+          <InfoCircleOutlined /> Nhận diện & Logo
         </span>
       ),
       children: (
-        <div className="max-w-4xl space-y-6">
+        <div className="max-w-5xl space-y-6">
           <Row gutter={24}>
-            <Col span={12}>
+            <Col span={8}>
               <RHFImageUpload
-                name="site_logo.value"
+                name="site_logo_header.value"
                 control={control}
-                label="Website Logo (PNG/SVG)"
+                label="Logo Header"
               />
             </Col>
-            <Col span={12}>
+            <Col span={8}>
+              <RHFImageUpload
+                name="site_logo_footer.value"
+                control={control}
+                label="Logo Footer"
+              />
+            </Col>
+            <Col span={8}>
               <RHFImageUpload
                 name="site_favicon.value"
                 control={control}
-                label="Favicon (Icon trình duyệt)"
+                label="Favicon"
               />
             </Col>
           </Row>
-          {renderI18nSetting("company_name", "Tên công ty / Thương hiệu")}
+          {renderI18n("site_name", "Tên Website / Thương hiệu")}
+          {renderI18n("site_slogan", "Slogan công ty")}
         </div>
       ),
     },
@@ -142,34 +146,76 @@ export default function SettingsPage() {
       key: "contact",
       label: (
         <span className="px-4">
-          <PhoneOutlined /> Liên hệ & Địa chỉ
+          <PhoneOutlined /> Liên hệ & Pháp nhân
         </span>
       ),
       children: (
-        <div className="max-w-4xl space-y-4">
+        <div className="max-w-5xl space-y-4">
           <Row gutter={16}>
-            <Col span={12}>
+            <Col span={8}>
+              <RHFInput
+                name="company_tax_code.value"
+                control={control}
+                label="Mã số thuế"
+              />
+            </Col>
+            <Col span={8}>
               <RHFInput
                 name="contact_hotline.value"
                 control={control}
-                label="Số điện thoại Hotline"
+                label="Hotline kinh doanh"
               />
             </Col>
-            <Col span={12}>
+            <Col span={8}>
               <RHFInput
                 name="contact_email.value"
                 control={control}
-                label="Email liên hệ"
+                label="Email nhận thông báo"
               />
             </Col>
           </Row>
-          {renderI18nSetting("company_address", "Địa chỉ trụ sở chính")}
+          {renderI18n("company_full_name", "Tên đầy đủ pháp nhân")}
+          {renderI18n("company_address", "Địa chỉ trụ sở")}
+          {renderI18n("working_hours", "Thời gian làm việc")}
           <RHFInput
-            name="contact_map_url.value"
+            name="contact_map_embed.value"
             control={control}
-            label="Link Google Maps Embed (iframe src)"
+            label="Mã nhúng Google Maps (iframe)"
             isTextArea
             textAreaProps={{ rows: 3 }}
+          />
+        </div>
+      ),
+    },
+    {
+      key: "seo",
+      label: (
+        <span className="px-4">
+          <SearchOutlined /> SEO Mặc định
+        </span>
+      ),
+      children: (
+        <div className="max-w-5xl space-y-4">
+          <Alert
+            message="Cấu hình này sẽ được sử dụng nếu Trang chủ hoặc các trang con không có SEO riêng."
+            type="info"
+            showIcon
+            className="mb-4"
+          />
+          {renderI18n("seo_default_title", "Meta Title mặc định")}
+          {renderI18n(
+            "seo_default_description",
+            "Meta Description mặc định",
+            true,
+          )}
+          {renderI18n(
+            "seo_default_keywords",
+            "Keywords mặc định (Cách nhau bởi dấu phẩy)",
+          )}
+          <RHFImageUpload
+            name="seo_default_og_image.value"
+            control={control}
+            label="Ảnh chia sẻ mặc định (OG Image)"
           />
         </div>
       ),
@@ -186,20 +232,30 @@ export default function SettingsPage() {
           <RHFInput
             name="social_facebook.value"
             control={control}
-            label="Link Facebook Fanpage"
-            placeholder="https://facebook.com/..."
+            label="Facebook Fanpage"
+            prefix="https://facebook.com/"
           />
           <RHFInput
             name="social_linkedin.value"
             control={control}
-            label="Link LinkedIn Company"
-            placeholder="https://linkedin.com/company/..."
+            label="LinkedIn Company"
+            prefix="https://linkedin.com/company/"
           />
           <RHFInput
-            name="social_zalo.value"
+            name="social_youtube.value"
             control={control}
-            label="Số điện thoại / Link Zalo"
-            placeholder="09xx..."
+            label="YouTube Channel"
+            prefix="https://youtube.com/"
+          />
+          <RHFInput
+            name="social_zalo_oa.value"
+            control={control}
+            label="Zalo OA / Phone"
+          />
+          <RHFInput
+            name="social_tiktok.value"
+            control={control}
+            label="TikTok Profile"
           />
         </div>
       ),
@@ -208,45 +264,82 @@ export default function SettingsPage() {
       key: "advanced",
       label: (
         <span className="px-4">
-          <CodeOutlined /> Kỹ thuật & SEO
+          <CodeOutlined /> Kỹ thuật & Scripts
         </span>
       ),
       children: (
-        <div className="max-w-4xl space-y-4">
+        <div className="max-w-5xl space-y-4">
+          <Row gutter={16}>
+            <Col span={12}>
+              <RHFInput
+                name="google_analytics_id.value"
+                control={control}
+                label="Google Analytics ID"
+                placeholder="G-XXXXXX"
+              />
+            </Col>
+            <Col span={12}>
+              <RHFInput
+                name="facebook_pixel_id.value"
+                control={control}
+                label="Facebook Pixel ID"
+              />
+            </Col>
+          </Row>
           <RHFInput
-            name="google_analytics_id.value"
+            name="google_search_console_id.value"
             control={control}
-            label="Google Analytics ID (G-XXXXXXX)"
-            placeholder="G-XXXXXXXX"
+            label="Google Search Console Verification Tag"
+          />
+          <Divider orientation="left">Google Indexing API (JSON)</Divider>
+          <RHFInput
+            name="google_indexing_json.value"
+            control={control}
+            label="Service Account JSON Content"
+            isTextArea
+            textAreaProps={{
+              rows: 5,
+              style: { fontFamily: "monospace", fontSize: "12px" },
+            }}
           />
           <Divider orientation="left">Scripts bổ sung</Divider>
-          <Text type="secondary" className="block mb-2 italic">
-            Mã Script chèn vào trước thẻ đóng &lt;/header&gt; (Ví dụ: FB Pixel,
-            Chat bot...)
-          </Text>
-          <RHFInput
-            name="header_scripts.value"
-            control={control}
-            label="Header Scripts"
-            isTextArea
-            textAreaProps={{ rows: 8, style: { fontFamily: "monospace" } }}
-          />
+          <Row gutter={16}>
+            <Col span={12}>
+              <RHFInput
+                name="header_scripts.value"
+                control={control}
+                label="Header Scripts (Trước </head>)"
+                isTextArea
+                textAreaProps={{ rows: 6 }}
+              />
+            </Col>
+            <Col span={12}>
+              <RHFInput
+                name="footer_scripts.value"
+                control={control}
+                label="Footer Scripts (Trước </body>)"
+                isTextArea
+                textAreaProps={{ rows: 6 }}
+              />
+            </Col>
+          </Row>
+          {renderI18n("copyright_text", "Dòng bản quyền chân trang")}
         </div>
       ),
     },
   ];
 
   return (
-    <Spin spinning={loading} description="Đang tải cấu hình hệ thống...">
+    <Spin spinning={loading} description="Đang nạp cấu hình hệ thống...">
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-start mb-6">
           <div>
             <Title level={2} className="m-0 font-semibold tracking-tight">
               Cài đặt hệ thống
             </Title>
             <Text type="secondary">
-              Quản lý thông tin định danh, liên hệ và các thông số kỹ thuật toàn
-              trang
+              Cấu hình toàn bộ thông tin thương hiệu, liên hệ và thông số kỹ
+              thuật Website
             </Text>
           </div>
           <Button
@@ -254,12 +347,11 @@ export default function SettingsPage() {
             htmlType="submit"
             icon={<SaveOutlined />}
             loading={isSaving}
-            className="bg-[#2E7D32] h-11 px-8 font-medium shadow-md"
+            className="bg-[#2E7D32] h-12 px-10 font-bold shadow-lg"
           >
             Lưu tất cả thay đổi
           </Button>
         </div>
-
         <Card
           variant="outlined"
           className="border-[#E0E0E0] shadow-none p-0"
@@ -268,32 +360,31 @@ export default function SettingsPage() {
           <Tabs
             tabPosition="left"
             items={tabItems}
-            className="min-h-[600px] setting-tabs"
-            style={{ padding: "16px 0" }}
+            className="min-h-[700px] setting-tabs"
           />
         </Card>
       </form>
-
       <style jsx global>{`
         .setting-tabs .ant-tabs-nav {
-          width: 220px;
+          width: 250px;
           background: #fbf9f8;
           border-right: 1px solid #e0e0e0;
           margin-right: 0 !important;
         }
         .setting-tabs .ant-tabs-content-holder {
-          padding: 24px 40px;
+          padding: 32px 48px;
           background: #fff;
         }
         .setting-tabs .ant-tabs-tab {
-          padding: 12px 0 !important;
+          padding: 14px 0 !important;
           margin: 4px 0 !important;
           border-radius: 0 !important;
+          transition: all 0.2s;
         }
         .setting-tabs .ant-tabs-tab-active {
           background: #fff !important;
-          border-right: 2px solid #2e7d32 !important;
-          font-weight: 600 !important;
+          border-right: 3px solid #2e7d32 !important;
+          font-weight: 700 !important;
         }
         .setting-tabs .ant-tabs-ink-bar {
           display: none !important;
@@ -302,3 +393,6 @@ export default function SettingsPage() {
     </Spin>
   );
 }
+
+// Bổ sung import Alert từ antd
+import { Alert } from "antd";
