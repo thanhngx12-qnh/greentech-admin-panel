@@ -35,8 +35,14 @@ export default function JobPostingsPage() {
   const [data, setData] = useState<JobPosting[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
+
+  // States Phân trang & Sắp xếp
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [sortBy, setSortBy] = useState<string>("created_at");
+  const [sortOrder, setSortOrder] = useState<string>("desc");
+
+  // States Bộ lọc
   const [searchText, setSearchText] = useState("");
   const [filterStatus, setFilterStatus] = useState<string | undefined>(
     undefined,
@@ -50,6 +56,9 @@ export default function JobPostingsPage() {
         limit,
         search: searchText || undefined,
         status: filterStatus,
+        // @ts-ignore - Bổ sung params sort
+        sortBy,
+        order: sortOrder,
       });
       setData(res.data);
       setTotal(res.meta.total);
@@ -58,11 +67,26 @@ export default function JobPostingsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, searchText, filterStatus, message]);
+  }, [page, limit, searchText, filterStatus, sortBy, sortOrder, message]);
 
   useEffect(() => {
     fetchJobs();
   }, [fetchJobs]);
+
+  // Xử lý khi thay đổi trang, limit hoặc click Sort trên tiêu đề cột
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    setPage(pagination.current || 1);
+    setLimit(pagination.pageSize || 10);
+
+    if (sorter && sorter.order) {
+      // Map field title_i18n cho phù hợp backend nếu cần
+      setSortBy(sorter.field === "title" ? "title_vi" : sorter.field);
+      setSortOrder(sorter.order === "descend" ? "desc" : "asc");
+    } else {
+      setSortBy("created_at");
+      setSortOrder("desc");
+    }
+  };
 
   const handleDelete = (id: string, title: string) => {
     modal.confirm({
@@ -100,7 +124,9 @@ export default function JobPostingsPage() {
     },
     {
       title: "Vị trí tuyển dụng",
+      dataIndex: "title", // Thêm dataIndex để sorter hoạt động
       key: "title",
+      sorter: true,
       render: (_: any, record: JobPosting) => (
         <div className="flex flex-col">
           <span className="font-semibold text-[#1b1c1c]">
@@ -124,7 +150,13 @@ export default function JobPostingsPage() {
       width: 120,
       render: (status: JobStatus) => (
         <Tag
-          color={status === "OPEN" ? "success" : "default"}
+          color={
+            status === "OPEN"
+              ? "success"
+              : status === "DRAFT"
+                ? "default"
+                : "error"
+          }
           className="rounded-full px-3"
         >
           {status === "OPEN"
@@ -140,6 +172,8 @@ export default function JobPostingsPage() {
       dataIndex: "created_at",
       key: "created_at",
       width: 150,
+      sorter: true,
+      defaultSortOrder: "descend" as const,
       render: (date: string) => (
         <span className="text-gray-600">
           {new Date(date).toLocaleDateString("vi-VN")}
@@ -219,10 +253,12 @@ export default function JobPostingsPage() {
             onClick={() => {
               setSearchText("");
               setFilterStatus(undefined);
+              setSortBy("created_at");
+              setSortOrder("desc");
               setPage(1);
             }}
           >
-            Xóa bộ lọc
+            Xóa bộ lọc & Sắp xếp
           </Button>
         </Space>
       </Card>
@@ -233,14 +269,13 @@ export default function JobPostingsPage() {
           dataSource={data}
           rowKey="id"
           loading={loading}
+          onChange={handleTableChange}
           pagination={{
             current: page,
             pageSize: limit,
             total: total,
-            onChange: (p, s) => {
-              setPage(p);
-              setLimit(s);
-            },
+            showSizeChanger: true,
+            showTotal: (total) => `Tổng số ${total} bản ghi`,
           }}
           scroll={{ x: 800 }}
         />
