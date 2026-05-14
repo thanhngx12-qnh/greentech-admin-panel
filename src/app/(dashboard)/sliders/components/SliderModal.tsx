@@ -50,10 +50,14 @@ export default function SliderModal({
       subtitle_vi: "",
       link_url_vi: "",
       image_desktop_en: "",
+      image_mobile_en: "",
       title_en: "",
+      subtitle_en: "",
       link_url_en: "",
       image_desktop_zh: "",
+      image_mobile_zh: "",
       title_zh: "",
+      subtitle_zh: "",
       link_url_zh: "",
     },
   });
@@ -61,23 +65,29 @@ export default function SliderModal({
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
-        // Map dữ liệu từ content_i18n (JSONB) về cấu trúc phẳng của Form DTO
         const { content_i18n } = initialData;
         reset({
           name: initialData.name,
           position: initialData.position,
           order: initialData.order,
           is_active: initialData.is_active,
+          // Map đầy đủ 5 trường cho từng ngôn ngữ
           image_desktop_vi: content_i18n?.vi?.image_desktop || "",
           image_mobile_vi: content_i18n?.vi?.image_mobile || "",
           title_vi: content_i18n?.vi?.title || "",
           subtitle_vi: content_i18n?.vi?.subtitle || "",
           link_url_vi: content_i18n?.vi?.link_url || "",
+
           image_desktop_en: content_i18n?.en?.image_desktop || "",
+          image_mobile_en: content_i18n?.en?.image_mobile || "",
           title_en: content_i18n?.en?.title || "",
+          subtitle_en: content_i18n?.en?.subtitle || "",
           link_url_en: content_i18n?.en?.link_url || "",
+
           image_desktop_zh: content_i18n?.zh?.image_desktop || "",
+          image_mobile_zh: content_i18n?.zh?.image_mobile || "",
           title_zh: content_i18n?.zh?.title || "",
+          subtitle_zh: content_i18n?.zh?.subtitle || "",
           link_url_zh: content_i18n?.zh?.link_url || "",
         });
       } else {
@@ -107,78 +117,59 @@ export default function SliderModal({
     }
   };
 
-  const tabItems = [
-    {
-      key: "vi",
-      label: "Tiếng Việt",
-      children: (
-        <div className="space-y-2 mt-2">
+  const renderLangTab = (lang: string, suffix: string) => (
+    <div className="space-y-2 mt-2">
+      <Row gutter={16}>
+        <Col span={12}>
           <RHFImageUpload
-            name="image_desktop_vi"
+            name={`image_desktop_${suffix}`}
             control={control}
-            label="Ảnh Desktop (VI)"
-            required
+            label={`Ảnh Desktop (${lang})`}
+            required={suffix === "vi"}
           />
+        </Col>
+        <Col span={12}>
           <RHFImageUpload
-            name="image_mobile_vi"
+            name={`image_mobile_${suffix}`}
             control={control}
-            label="Ảnh Mobile (VI)"
+            label={`Ảnh Mobile (${lang})`}
           />
-          <RHFInput name="title_vi" control={control} label="Tiêu đề chính" />
-          <RHFInput name="subtitle_vi" control={control} label="Tiêu đề phụ" />
+        </Col>
+      </Row>
+      <Row gutter={16}>
+        <Col span={12}>
           <RHFInput
-            name="link_url_vi"
+            name={`title_${suffix}`}
             control={control}
-            label="Đường dẫn (Link URL)"
+            label="Tiêu đề chính"
           />
-        </div>
-      ),
-    },
-    {
-      key: "en",
-      label: "English",
-      children: (
-        <div className="space-y-2 mt-2">
-          <RHFImageUpload
-            name="image_desktop_en"
-            control={control}
-            label="Desktop Image (EN)"
-          />
-          <RHFInput name="title_en" control={control} label="Title" />
-          <RHFInput name="link_url_en" control={control} label="Link URL" />
-        </div>
-      ),
-    },
-    {
-      key: "zh",
-      label: "中文",
-      children: (
-        <div className="space-y-2 mt-2">
-          <RHFImageUpload
-            name="image_desktop_zh"
-            control={control}
-            label="Desktop Image (ZH)"
-          />
-          <RHFInput name="title_zh" control={control} label="标题 (Title)" />
+        </Col>
+        <Col span={12}>
           <RHFInput
-            name="link_url_zh"
+            name={`subtitle_${suffix}`}
             control={control}
-            label="链接 (Link URL)"
+            label="Tiêu đề phụ"
           />
-        </div>
-      ),
-    },
-  ];
+        </Col>
+      </Row>
+      <RHFInput
+        name={`link_url_${suffix}`}
+        control={control}
+        label="Đường dẫn (Link URL)"
+        placeholder="https://..."
+      />
+    </div>
+  );
 
   return (
     <Modal
-      title={isEditing ? "Cỉnh sửa Banner" : "Thêm Banner mới"}
+      title={isEditing ? "Chỉnh sửa Banner" : "Thêm Banner mới"}
       open={isOpen}
       onCancel={onClose}
       footer={null}
-      width={800}
-      destroyOnHidden // Chuẩn Antd v5
-      mask={{ closable: false }} // Chuẩn Antd v5
+      width={900}
+      destroyOnHidden
+      mask={{ closable: false }}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="mt-4">
         <Row gutter={16}>
@@ -209,7 +200,26 @@ export default function SliderModal({
         </Row>
 
         <div className="mb-6 p-4 border border-[#E0E0E0] rounded-[4px] bg-[#fafafa]">
-          <Tabs items={tabItems} type="line" />
+          <Tabs
+            items={[
+              {
+                key: "vi",
+                label: "Tiếng Việt",
+                children: renderLangTab("Tiếng Việt", "vi"),
+              },
+              {
+                key: "en",
+                label: "English",
+                children: renderLangTab("English", "en"),
+              },
+              {
+                key: "zh",
+                label: "中文",
+                children: renderLangTab("中文", "zh"),
+              },
+            ]}
+            type="line"
+          />
         </div>
 
         <Row gutter={16}>

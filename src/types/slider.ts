@@ -20,7 +20,7 @@ export const sliderFormSchema = z.object({
   order: z.coerce.number().default(0),
   is_active: z.boolean().default(true),
 
-  // Tiếng Việt (Bắt buộc Desktop Image)
+  // Tiếng Việt
   image_desktop_vi: z
     .string()
     .url("Link ảnh không hợp lệ")
@@ -34,22 +34,34 @@ export const sliderFormSchema = z.object({
   subtitle_vi: z.string().optional(),
   link_url_vi: z.string().url("Link không hợp lệ").optional().or(z.literal("")),
 
-  // Tiếng Anh (Tùy chọn)
+  // Tiếng Anh
   image_desktop_en: z
     .string()
     .url("Link ảnh không hợp lệ")
     .optional()
     .or(z.literal("")),
+  image_mobile_en: z
+    .string()
+    .url("Link ảnh không hợp lệ")
+    .optional()
+    .or(z.literal("")),
   title_en: z.string().optional(),
+  subtitle_en: z.string().optional(),
   link_url_en: z.string().url("Link không hợp lệ").optional().or(z.literal("")),
 
-  // Tiếng Trung (Bổ sung cho đồng bộ hệ thống)
+  // Tiếng Trung
   image_desktop_zh: z
     .string()
     .url("Link ảnh không hợp lệ")
     .optional()
     .or(z.literal("")),
+  image_mobile_zh: z
+    .string()
+    .url("Link ảnh không hợp lệ")
+    .optional()
+    .or(z.literal("")),
   title_zh: z.string().optional(),
+  subtitle_zh: z.string().optional(),
   link_url_zh: z.string().url("Link không hợp lệ").optional().or(z.literal("")),
 });
 
@@ -59,19 +71,8 @@ export interface SliderAdmin {
   id: number;
   name: string;
   position: SliderPosition;
-  content_i18n: any; // Backend lưu JSONB
+  content_i18n: any;
   is_active: boolean;
   order: number;
   created_at: string;
-}
-
-export interface SliderListResponse {
-  success: boolean;
-  data: SliderAdmin[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
 }
