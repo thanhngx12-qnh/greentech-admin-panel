@@ -52,7 +52,11 @@ export default function Sidebar({ collapsed }: SidebarProps) {
         { key: "/services", label: "Dịch vụ" },
       ],
     },
-    { key: "/jobs", icon: <TeamOutlined />, label: "Tuyển dụng (Jobs)" },
+    {
+      key: "/job-postings",
+      icon: <TeamOutlined />,
+      label: "Tuyển dụng (Jobs)",
+    },
     {
       key: "/standards",
       icon: <BookOutlined />,
