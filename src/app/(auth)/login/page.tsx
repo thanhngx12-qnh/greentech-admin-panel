@@ -63,7 +63,7 @@ export default function LoginPage() {
 
         {errorMsg && (
           <Alert
-            message={errorMsg}
+            title={errorMsg}
             type="error"
             showIcon
             className="mb-6 rounded-[4px] border-[#ffdad6] bg-[#ffdad6]"
