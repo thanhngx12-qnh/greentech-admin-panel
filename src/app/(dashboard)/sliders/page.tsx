@@ -18,10 +18,10 @@ import {
   ReloadOutlined,
   EditOutlined,
   DeleteOutlined,
-  PictureOutlined,
 } from "@ant-design/icons";
 import { SliderAdmin, SliderPosition } from "@/types/slider";
 import { sliderService } from "@/lib/services/slider.service";
+import SliderModal from "./components/SliderModal"; // Import Modal đã tạo
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -33,13 +33,8 @@ export default function SlidersPage() {
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
 
-  // States Phân trang & Sắp xếp
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
-  const [sortBy, setSortBy] = useState<string>("order");
-  const [sortOrder, setSortOrder] = useState<string>("asc");
-
-  // States Bộ lọc
   const [filterPosition, setFilterPosition] = useState<string | undefined>(
     undefined,
   );
@@ -47,7 +42,7 @@ export default function SlidersPage() {
     undefined,
   );
 
-  // States cho Modal Thêm/Sửa (Sẽ triển khai ở Chunk 3)
+  // States quản lý Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSlider, setEditingSlider] = useState<SliderAdmin | null>(null);
 
@@ -59,9 +54,6 @@ export default function SlidersPage() {
         limit,
         position: filterPosition,
         status: filterStatus,
-        // @ts-ignore - Bổ sung sort params
-        sortBy,
-        order: sortOrder,
       });
       setData(res.data);
       setTotal(res.meta.total);
@@ -70,22 +62,25 @@ export default function SlidersPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, filterPosition, filterStatus, sortBy, sortOrder, message]);
+  }, [page, limit, filterPosition, filterStatus, message]);
 
   useEffect(() => {
     fetchSliders();
   }, [fetchSliders]);
 
-  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+  const handleTableChange = (pagination: any) => {
     setPage(pagination.current || 1);
     setLimit(pagination.pageSize || 10);
-    if (sorter && sorter.order) {
-      setSortBy(sorter.field);
-      setSortOrder(sorter.order === "descend" ? "desc" : "asc");
-    } else {
-      setSortBy("order");
-      setSortOrder("asc");
-    }
+  };
+
+  const handleAdd = () => {
+    setEditingSlider(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (record: SliderAdmin) => {
+    setEditingSlider(record);
+    setIsModalOpen(true);
   };
 
   const handleDelete = (id: number, name: string) => {
@@ -99,8 +94,8 @@ export default function SlidersPage() {
       okText: "Xóa",
       okType: "danger",
       cancelText: "Hủy",
-      destroyOnHidden: true, // Tuân thủ quy tắc Antd v5
-      mask: { closable: false }, // Tuân thủ quy tắc Antd v5
+      destroyOnHidden: true,
+      mask: { closable: false },
       onOk: async () => {
         try {
           await sliderService.deleteSlider(id);
@@ -142,7 +137,7 @@ export default function SlidersPage() {
       ),
     },
     {
-      title: "Vị trí hiển thị",
+      title: "Vị trí",
       dataIndex: "position",
       key: "position",
       width: 180,
@@ -157,7 +152,6 @@ export default function SlidersPage() {
       dataIndex: "order",
       key: "order",
       width: 100,
-      sorter: true,
       align: "center" as const,
     },
     {
@@ -175,18 +169,6 @@ export default function SlidersPage() {
       ),
     },
     {
-      title: "Ngày tạo",
-      dataIndex: "created_at",
-      key: "created_at",
-      width: 150,
-      sorter: true,
-      render: (date: string) => (
-        <span className="text-gray-600">
-          {new Date(date).toLocaleDateString("vi-VN")}
-        </span>
-      ),
-    },
-    {
       title: "Hành động",
       key: "action",
       width: 100,
@@ -197,10 +179,7 @@ export default function SlidersPage() {
             <Button
               type="text"
               icon={<EditOutlined className="text-[#1976D2]" />}
-              onClick={() => {
-                setEditingSlider(record);
-                setIsModalOpen(true);
-              }}
+              onClick={() => handleEdit(record)}
             />
           </Tooltip>
           <Tooltip title="Xóa">
@@ -226,10 +205,7 @@ export default function SlidersPage() {
           type="primary"
           icon={<PlusOutlined />}
           className="bg-[#2E7D32]"
-          onClick={() => {
-            setEditingSlider(null);
-            setIsModalOpen(true);
-          }}
+          onClick={handleAdd}
         >
           Thêm Banner
         </Button>
@@ -297,8 +273,17 @@ export default function SlidersPage() {
         />
       </Card>
 
-      {/* MODAL THÊM SỬA BANNER (Sẽ triển khai ở Chunk 3) */}
-      {/* <SliderModal ... /> */}
+      {/* MODAL THÊM SỬA BANNER */}
+      <SliderModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={() => {
+          // QUAN TRỌNG: Đóng modal và load lại data khi thành công
+          setIsModalOpen(false);
+          fetchSliders();
+        }}
+        initialData={editingSlider}
+      />
     </div>
   );
 }
