@@ -136,8 +136,8 @@ export default function ServicesPage() {
       sorter: true,
       render: (price: number, record: ServiceAdmin) => (
         <span className="text-[#2E7D32] font-semibold">
-          {price ? price.toLocaleString("vi-VN") : "Liên hệ"}{" "}
-          {price ? record.currency : ""}
+          {price ? new Intl.NumberFormat("de-DE").format(price) : "Liên hệ"}
+          {price ? ` ${record.currency}` : ""}
         </span>
       ),
     },

@@ -34,6 +34,7 @@ import { generateSlug } from "@/utils/string";
 import { RHFInput } from "@/components/ui/form/RHFInput";
 import { RHFSelect } from "@/components/ui/form/RHFSelect";
 import { RHFEditor } from "@/components/ui/form/RHFEditor";
+import { RHFInputNumber } from "@/components/ui/form/RHFInputNumber";
 import { RHFImageUpload } from "@/components/ui/form/RHFImageUpload";
 
 interface ServiceFormProps {
@@ -305,12 +306,14 @@ export default function ServiceForm({
               />
               <Row gutter={12}>
                 <Col span={14}>
-                  <RHFInput
-                    name="price"
-                    control={control}
-                    label="Giá dự kiến"
-                    type="number"
-                  />
+                  <Col span={14}>
+                    <RHFInputNumber
+                      name="price"
+                      control={control}
+                      label="Giá dự kiến"
+                      placeholder="1.000.000"
+                    />
+                  </Col>
                 </Col>
                 <Col span={10}>
                   <RHFSelect
