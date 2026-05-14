@@ -2,6 +2,7 @@
 import React from "react";
 import { Controller, Control } from "react-hook-form";
 import { Editor } from "@tinymce/tinymce-react";
+import { mediaService } from "@/lib/services/media.service";
 
 interface RHFEditorProps {
   name: string;
@@ -74,6 +75,25 @@ export function RHFEditor({
                 content_css: "default",
                 branding: false,
                 promotion: false,
+                images_upload_handler: async (blobInfo: any) => {
+                  try {
+                    const file = new File(
+                      [blobInfo.blob()],
+                      blobInfo.filename(),
+                      { type: blobInfo.blob().type },
+                    );
+                    const res = await mediaService.upload(file);
+                    return res.data.location; // Trả về URL cho TinyMCE chèn vào bài
+                  } catch (err) {
+                    throw {
+                      message: "Lỗi khi upload ảnh vào bài viết",
+                      remove: true,
+                    };
+                  }
+                },
+
+                // Cho phép kéo thả ảnh trực tiếp vào bài
+                paste_data_images: true,
               }}
             />
             {error && (

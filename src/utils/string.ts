@@ -1,13 +1,26 @@
 // File: src/utils/string.ts
+import { pinyin } from "pinyin-pro";
+
 export const generateSlug = (str: string): string => {
-  return str
+  if (!str) return "";
+
+  // Kiểm tra nếu chuỗi chứa ký tự tiếng Trung (Han characters)
+  const hasChinese = /[\u4e00-\u9fa5]/.test(str);
+
+  let processedStr = str;
+  if (hasChinese) {
+    // Chuyển tiếng Trung sang Pinyin không dấu, cách nhau bởi khoảng trắng
+    processedStr = pinyin(str, { toneType: "none", nonPinyin: "removed" });
+  }
+
+  return processedStr
     .toLowerCase()
-    .normalize("NFD") // Chuẩn hóa unicode (tách dấu ra khỏi chữ)
-    .replace(/[\u0300-\u036f]/g, "") // Xóa các dấu
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/đ/g, "d")
     .replace(/Đ/g, "d")
-    .replace(/[^a-z0-9 -]/g, "") // Xóa các ký tự đặc biệt
-    .replace(/\s+/g, "-") // Thay khoảng trắng bằng dấu gạch ngang
-    .replace(/-+/g, "-") // Xóa các dấu gạch ngang liên tiếp
+    .replace(/[^a-z0-9 -]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
     .trim();
 };

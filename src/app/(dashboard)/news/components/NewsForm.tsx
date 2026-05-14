@@ -17,6 +17,7 @@ import { generateSlug } from "@/utils/string";
 import { RHFInput } from "@/components/ui/form/RHFInput";
 import { RHFSelect } from "@/components/ui/form/RHFSelect";
 import { RHFEditor } from "@/components/ui/form/RHFEditor";
+import { RHFImageUpload } from "@/components/ui/form/RHFImageUpload";
 
 interface NewsFormProps {
   isEditing: boolean;
@@ -173,32 +174,35 @@ export default function NewsForm({
       <Card
         variant="outlined"
         title={
-          <span className="text-[#1b1c1c] font-semibold">
+          <span className="text-[#1b1c1c] font-semibold text-[15px]">
             Tối ưu SEO ({lang.toUpperCase()})
           </span>
         }
-        className="border-[#E0E0E0] shadow-none"
+        className="border-[#E0E0E0] shadow-none bg-[#fafafa]"
       >
-        <RHFInput
-          name={`seo_i18n.${lang}.meta_title`}
-          control={control}
-          label="Meta Title"
-          placeholder="Tiêu đề hiển thị trên Google..."
-        />
-        <RHFInput
-          name={`seo_i18n.${lang}.meta_description`}
-          control={control}
-          label="Meta Description"
-          isTextArea
-          textAreaProps={{ rows: 3 }}
-          placeholder="Mô tả ngắn gọn..."
-        />
-        <RHFInput
-          name={`seo_i18n.${lang}.og_image`}
-          control={control}
-          label="OG Image URL (Ảnh chia sẻ MXH)"
-          placeholder="https://..."
-        />
+        <div className="space-y-4">
+          <RHFInput
+            name={`seo_i18n.${lang}.meta_title`}
+            control={control}
+            label="Meta Title"
+            placeholder="Tiêu đề hiển thị trên Google..."
+          />
+          <RHFInput
+            name={`seo_i18n.${lang}.meta_description`}
+            control={control}
+            label="Meta Description"
+            isTextArea
+            textAreaProps={{ rows: 3 }}
+            placeholder="Mô tả ngắn gọn cho công cụ tìm kiếm..."
+          />
+
+          {/* Thay thế Input text bằng RHFImageUpload cho ảnh SEO */}
+          <RHFImageUpload
+            name={`seo_i18n.${lang}.og_image`}
+            control={control}
+            label="OG Image (Ảnh chia sẻ lên Facebook, Zalo, LinkedIn)"
+          />
+        </div>
       </Card>
     </div>
   );
@@ -292,11 +296,11 @@ export default function NewsForm({
                   { label: "Lên lịch", value: "SCHEDULED" },
                 ]}
               />
-              <RHFInput
+              <RHFImageUpload
                 name="featured_image"
                 control={control}
-                label="Ảnh đại diện (URL)"
-                placeholder="https://example.com/image.jpg"
+                label="Ảnh đại diện bài viết"
+                required
               />
               {/* Box review ảnh */}
               {watch("featured_image") && (
