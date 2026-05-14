@@ -76,17 +76,16 @@ export default function StandardsPage() {
         limit,
         search: searchText || undefined,
         category_id: filterCategoryId,
-        sortBy,
-        order: sortOrder,
+        // ĐÃ GỠ BỎ sortBy và order để tránh lỗi Backend
       });
       setData(res.data);
       setTotal(res.meta.total);
     } catch (error: any) {
-      message.error(error.message || "Lỗi khi tải danh sách tiêu chuẩn");
+      message.error(error.message || "Lỗi khi tải danh sách");
     } finally {
       setLoading(false);
     }
-  }, [page, limit, searchText, filterCategoryId, sortBy, sortOrder, message]);
+  }, [page, limit, searchText, filterCategoryId, message]);
 
   useEffect(() => {
     fetchStandards();
