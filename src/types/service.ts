@@ -19,7 +19,7 @@ export const serviceFormSchema = z.object({
     .or(z.literal("")),
 
   // Dữ liệu thương mại
-  price: z.number().min(0, "Giá không được âm").optional().or(z.literal(0)),
+  price: z.coerce.number().min(0, "Giá không được âm").optional().default(0),
   currency: z.string().default("VND"),
   duration: z.string().optional(),
 

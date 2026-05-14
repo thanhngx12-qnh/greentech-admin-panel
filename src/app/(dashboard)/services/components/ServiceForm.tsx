@@ -105,7 +105,7 @@ export default function ServiceForm({
         category_id: initialData.category_id,
         status: initialData.status,
         featured_image: initialData.featured_image || "",
-        price: initialData.price || 0,
+        price: Number(initialData.price) || 0,
         currency: initialData.currency || "VND",
         duration: initialData.duration || "",
         title_vi: initialData.title_i18n?.vi || "",
