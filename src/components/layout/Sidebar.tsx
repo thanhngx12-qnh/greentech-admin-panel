@@ -13,6 +13,7 @@ import {
   PictureOutlined,
   BookOutlined,
   SettingOutlined,
+  SolutionOutlined,
 } from "@ant-design/icons";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -25,6 +26,20 @@ interface SidebarProps {
 export default function Sidebar({ collapsed }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
+
+  // Xác định Key nào nên được mở mặc định dựa trên pathname
+  const getDefaultOpenKeys = () => {
+    if (pathname.includes("/users") || pathname.includes("/audit-logs"))
+      return ["accounts"];
+    if (pathname.includes("/news") || pathname.includes("/services"))
+      return ["content"];
+    if (
+      pathname.includes("/job-postings") ||
+      pathname.includes("/job-applications")
+    )
+      return ["careers"];
+    return [];
+  };
 
   const menuItems = [
     { key: "/", icon: <DashboardOutlined />, label: "Dashboard" },
@@ -53,9 +68,13 @@ export default function Sidebar({ collapsed }: SidebarProps) {
       ],
     },
     {
-      key: "/job-postings",
+      key: "careers",
       icon: <TeamOutlined />,
-      label: "Tuyển dụng (Jobs)",
+      label: "Tuyển dụng",
+      children: [
+        { key: "/job-postings", label: "Tin tuyển dụng" },
+        { key: "/job-applications", label: "Hồ sơ ứng viên (CVs)" },
+      ],
     },
     {
       key: "/standards",
@@ -65,6 +84,15 @@ export default function Sidebar({ collapsed }: SidebarProps) {
     { key: "/sliders", icon: <PictureOutlined />, label: "Quản lý Banners" },
     { key: "/settings", icon: <SettingOutlined />, label: "Cài đặt chung" },
   ];
+
+  // Hàm xử lý việc xác định selected key cho cả các trang con (create/edit)
+  const getSelectedKey = () => {
+    if (pathname.startsWith("/news")) return "/news";
+    if (pathname.startsWith("/services")) return "/services";
+    if (pathname.startsWith("/job-postings")) return "/job-postings";
+    if (pathname.startsWith("/job-applications")) return "/job-applications";
+    return pathname;
+  };
 
   return (
     <Sider
@@ -82,8 +110,8 @@ export default function Sidebar({ collapsed }: SidebarProps) {
       <Menu
         theme="dark"
         mode="inline"
-        selectedKeys={[pathname]}
-        defaultOpenKeys={["accounts", "content"]}
+        selectedKeys={[getSelectedKey()]}
+        defaultOpenKeys={getDefaultOpenKeys()}
         items={menuItems}
         onClick={({ key }) => router.push(key)}
         style={{ backgroundColor: "#1A1C1E" }}
