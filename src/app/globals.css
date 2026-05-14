@@ -1,26 +1,70 @@
+/* File: src/app/globals.css */
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Colors */
+  --color-surface: #fbf9f8;
+  --color-surface-dim: #dbd9d9;
+  --color-surface-bright: #fbf9f8;
+  --color-surface-container: #efeded;
+  --color-on-surface: #1b1c1c;
+  --color-inverse-surface: #303030;
+
+  /* Brand Colors */
+  --color-primary: #0d631b;
+  --color-primary-container: #2e7d32;
+  --color-on-primary: #ffffff;
+
+  --color-secondary: #005faf;
+  --color-secondary-container: #54a0fe;
+
+  --color-error: #ba1a1a;
+  --color-error-container: #ffdad6;
+
+  /* Layout Colors */
+  --color-background: #f5f7fa; /* Surface Level 0 */
+  --color-sidebar: #1a1c1e; /* Dark charcoal */
+  --color-border: #e0e0e0; /* Outline 1px */
+
+  /* Typography */
+  --font-inter: "Inter", sans-serif;
+
+  /* Border Radius (Soft shape) */
+  --radius-sm: 0.125rem;
+  --radius-DEFAULT: 0.25rem; /* 4px */
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+
+  /* Spacing */
+  --spacing-base: 8px;
+  --spacing-xs: 4px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Reset một số CSS cơ bản để tương thích tốt với Antd */
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: var(--color-background);
+}
+
+/* File: src/app/globals.css */
+/* Bổ sung vào cuối file globals.css hiện tại của bạn */
+
+/* B2B Design: Vạch xanh lá 4px bên trái cho Active Menu Item */
+.ant-menu-dark.ant-menu-inline .ant-menu-item {
+  border-radius: 0 !important; /* Xóa bo tròn mặc định của Antd để trông Professional hơn */
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+.ant-menu-dark.ant-menu-inline .ant-menu-item-selected {
+  border-left: 4px solid var(--color-primary-container) !important;
+  background-color: rgba(46, 125, 50, 0.15) !important;
 }
