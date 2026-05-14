@@ -3,7 +3,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
-import { ConfigProvider } from "antd";
+// Import thêm App từ antd và đổi tên thành AntdApp để tránh nhầm lẫn
+import { ConfigProvider, App as AntdApp } from "antd";
 import themeConfig from "@/theme/themeConfig";
 
 const inter = Inter({
@@ -25,7 +26,10 @@ export default function RootLayout({
     <html lang="vi">
       <body className={inter.className}>
         <AntdRegistry>
-          <ConfigProvider theme={themeConfig}>{children}</ConfigProvider>
+          <ConfigProvider theme={themeConfig}>
+            {/* Bọc toàn bộ ứng dụng bằng AntdApp để đồng bộ Theme cho Message, Modal, Notification */}
+            <AntdApp>{children}</AntdApp>
+          </ConfigProvider>
         </AntdRegistry>
       </body>
     </html>

@@ -2,13 +2,15 @@
 "use client";
 
 import React from "react";
-import { Layout, Button, Dropdown, Avatar } from "antd";
+import { Layout, Button, Dropdown, Avatar, App as AntdApp } from "antd";
 import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   UserOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
+import { useRouter } from "next/navigation";
+import { authService } from "@/lib/services/auth.service";
 
 const { Header: AntdHeader } = Layout;
 
@@ -18,6 +20,20 @@ interface HeaderProps {
 }
 
 export default function Header({ collapsed, setCollapsed }: HeaderProps) {
+  const router = useRouter();
+  const { message } = AntdApp.useApp();
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      message.success("Đã đăng xuất khỏi hệ thống");
+      router.push("/login");
+      router.refresh(); // Ép Next.js tải lại để chạy qua Middleware (bảo vệ route)
+    } catch (error) {
+      message.error("Lỗi khi đăng xuất");
+    }
+  };
+
   const userMenuItems = [
     {
       key: "profile",
@@ -32,7 +48,7 @@ export default function Header({ collapsed, setCollapsed }: HeaderProps) {
       icon: <LogoutOutlined />,
       label: "Đăng xuất",
       danger: true,
-      onClick: () => console.log("Logout clicked"),
+      onClick: handleLogout, // Gắn logic Đăng xuất
     },
   ];
 
@@ -50,10 +66,12 @@ export default function Header({ collapsed, setCollapsed }: HeaderProps) {
 
       <div>
         <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
-          <div className="cursor-pointer flex items-center gap-2 hover:bg-gray-50 px-3 py-1 rounded-md transition-all border border-transparent hover:border-[#E0E0E0]">
+          {/* FIX UI: Sửa class hover, bỏ border gây tăng height, fix chiều cao h-10 để box-model luôn ổn định */}
+          <div className="cursor-pointer flex items-center gap-2 hover:bg-gray-100 px-3 h-10 rounded-[4px] transition-colors">
             <Avatar
               style={{ backgroundColor: "#2E7D32" }}
               icon={<UserOutlined />}
+              size="small"
             />
             <span className="font-medium text-[#1b1c1c] text-[14px]">
               Admin
