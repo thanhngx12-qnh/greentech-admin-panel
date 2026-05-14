@@ -34,15 +34,22 @@ export default function CategoriesPage() {
   const [data, setData] = useState<Category[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [total, setTotal] = useState<number>(0);
+
+  // States Phân trang
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
+
+  // States Bộ lọc
   const [searchText, setSearchText] = useState<string>("");
   const [filterType, setFilterType] = useState<string | undefined>(undefined);
   const [filterStatus, setFilterStatus] = useState<string | undefined>(
     undefined,
   );
 
-  // States cho Modal
+  // States Sắp xếp (Mặc định sort theo order tăng dần)
+  const [sortBy, setSortBy] = useState<string>("order");
+  const [sortOrder, setSortOrder] = useState<string>("asc");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
@@ -55,6 +62,8 @@ export default function CategoriesPage() {
         search: searchText || undefined,
         type: filterType,
         status: filterStatus,
+        sortBy,
+        order: sortOrder,
       });
       if (res.success) {
         setData(res.data);
@@ -65,11 +74,36 @@ export default function CategoriesPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, searchText, filterType, filterStatus, message]);
+  }, [
+    page,
+    limit,
+    searchText,
+    filterType,
+    filterStatus,
+    sortBy,
+    sortOrder,
+    message,
+  ]);
 
   useEffect(() => {
     fetchCategories();
   }, [fetchCategories]);
+
+  // Xử lý sự kiện khi thay đổi trang, limit, hoặc bấm nút Sort trên cột
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
+    setPage(pagination.current || 1);
+    setLimit(pagination.pageSize || 10);
+
+    // Nếu người dùng click sort
+    if (sorter && sorter.order) {
+      setSortBy(sorter.field);
+      setSortOrder(sorter.order === "descend" ? "desc" : "asc");
+    } else {
+      // Nếu bỏ sort thì trả về mặc định
+      setSortBy("order");
+      setSortOrder("asc");
+    }
+  };
 
   const handleAdd = () => {
     setEditingCategory(null);
@@ -110,8 +144,9 @@ export default function CategoriesPage() {
       title: "STT",
       dataIndex: "order",
       key: "order",
-      width: 80,
+      width: 100,
       align: "center" as const,
+      sorter: true, // Bật tính năng sort Server-side
     },
     {
       title: "Tên danh mục (VI)",
@@ -121,12 +156,6 @@ export default function CategoriesPage() {
           {record.name_i18n?.vi || "N/A"}
         </span>
       ),
-    },
-    {
-      title: "Đường dẫn (Slug)",
-      dataIndex: "slug",
-      key: "slug",
-      render: (slug: string) => <span className="text-gray-500">{slug}</span>,
     },
     {
       title: "Loại",
@@ -156,6 +185,26 @@ export default function CategoriesPage() {
           {isActive ? "Hoạt động" : "Tạm ẩn"}
         </Tag>
       ),
+    },
+    {
+      title: "Ngày tạo",
+      dataIndex: "created_at",
+      key: "created_at",
+      width: 160,
+      sorter: true, // Bật tính năng sort Server-side
+      render: (dateString: string) => {
+        if (!dateString) return "N/A";
+        const date = new Date(dateString);
+        return (
+          <span>
+            {date.toLocaleDateString("vi-VN")}{" "}
+            {date.toLocaleTimeString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+        );
+      },
     },
     {
       title: "Hành động",
@@ -243,8 +292,18 @@ export default function CategoriesPage() {
             <Option value="true">Hoạt động</Option>
             <Option value="false">Tạm ẩn</Option>
           </Select>
-          <Button icon={<ReloadOutlined />} onClick={() => fetchCategories()}>
-            Làm mới
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={() => {
+              setSearchText("");
+              setFilterType(undefined);
+              setFilterStatus(undefined);
+              setSortBy("order");
+              setSortOrder("asc");
+              setPage(1);
+            }}
+          >
+            Xóa bộ lọc
           </Button>
         </Space>
       </Card>
@@ -254,21 +313,18 @@ export default function CategoriesPage() {
           dataSource={data}
           rowKey="id"
           loading={loading}
+          onChange={handleTableChange} // Bắt sự kiện sort & pagination
           pagination={{
             current: page,
             pageSize: limit,
             total: total,
             showSizeChanger: true,
-            onChange: (newPage, newLimit) => {
-              setPage(newPage);
-              setLimit(newLimit);
-            },
+            showTotal: (total) => `Tổng số ${total} bản ghi`,
           }}
           scroll={{ x: 800 }}
         />
       </Card>
 
-      {/* MODAL THÊM SỬA */}
       <CategoryModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
