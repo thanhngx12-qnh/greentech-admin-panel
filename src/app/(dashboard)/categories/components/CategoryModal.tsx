@@ -50,12 +50,11 @@ export default function CategoryModal({
     },
   });
 
-  const nameVi = watch("name_i18n.vi");
-  useEffect(() => {
-    if (!isEditing && nameVi) {
-      setValue("slug", generateSlug(nameVi), { shouldValidate: true });
-    }
-  }, [nameVi, isEditing, setValue]);
+  const handleGenerateSlugManual = () => {
+    const nameVi = watch("name_i18n.vi");
+    if (!nameVi) return message.warning("Vui lòng nhập tên Tiếng Việt");
+    setValue("slug", generateSlug(nameVi), { shouldValidate: true });
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -211,6 +210,15 @@ export default function CategoryModal({
               label="Đường dẫn SEO (Slug)"
               placeholder="duong-dan-seo"
               required
+              customAddon={
+                <Button
+                  type="text"
+                  size="small"
+                  onClick={handleGenerateSlugManual}
+                >
+                  Tạo Slug
+                </Button>
+              }
             />
           </Col>
         </Row>

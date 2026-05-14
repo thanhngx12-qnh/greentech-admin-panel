@@ -11,6 +11,8 @@ interface RHFInputProps extends Omit<InputProps, "name" | "defaultValue"> {
   required?: boolean;
   isTextArea?: boolean;
   textAreaProps?: TextAreaProps;
+  // Bổ sung prop này để truyền button vào
+  customAddon?: React.ReactNode;
 }
 
 export function RHFInput({
@@ -20,6 +22,7 @@ export function RHFInput({
   required,
   isTextArea,
   textAreaProps,
+  customAddon,
   ...inputProps
 }: RHFInputProps) {
   return (
@@ -37,14 +40,15 @@ export function RHFInput({
                 {...field}
                 {...textAreaProps}
                 status={error ? "error" : ""}
-                className="rounded-[4px] hover:border-[#1976D2] focus:border-[#1976D2]"
+                className="rounded-[4px]"
               />
             ) : (
               <Input
                 {...field}
                 {...inputProps}
+                addonAfter={customAddon} // Chèn nút bấm vào đây
                 status={error ? "error" : ""}
-                className="rounded-[4px] hover:border-[#1976D2] focus:border-[#1976D2]"
+                className="rounded-[4px]"
               />
             )}
             {error && (

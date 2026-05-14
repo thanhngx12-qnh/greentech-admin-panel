@@ -32,20 +32,24 @@ export default function NewsPage() {
   const router = useRouter();
   const { message, modal } = AntdApp.useApp();
 
-  // States quản lý dữ liệu
   const [data, setData] = useState<NewsAdmin[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [total, setTotal] = useState<number>(0);
 
-  // States phân trang & bộ lọc
+  // States Phân trang
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
+
+  // States Bộ lọc
   const [searchText, setSearchText] = useState<string>("");
   const [filterStatus, setFilterStatus] = useState<string | undefined>(
     undefined,
   );
 
-  // Lấy danh sách Bài viết
+  // States Sắp xếp (Mặc định mới nhất lên đầu)
+  const [sortBy, setSortBy] = useState<string>("created_at");
+  const [sortOrder, setSortOrder] = useState<string>("desc");
+
   const fetchNews = useCallback(async () => {
     setLoading(true);
     try {
@@ -54,6 +58,9 @@ export default function NewsPage() {
         limit,
         search: searchText || undefined,
         status: filterStatus,
+        // @ts-ignore - Bổ sung params sort cho service
+        sortBy,
+        order: sortOrder,
       });
       if (res.success) {
         setData(res.data);
@@ -64,26 +71,33 @@ export default function NewsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, limit, searchText, filterStatus, message]);
+  }, [page, limit, searchText, filterStatus, sortBy, sortOrder, message]);
 
   useEffect(() => {
     fetchNews();
   }, [fetchNews]);
 
-  // Xử lý thay đổi phân trang
-  const handleTableChange = (pagination: any) => {
+  // Xử lý khi thay đổi trang hoặc sắp xếp cột
+  const handleTableChange = (pagination: any, filters: any, sorter: any) => {
     setPage(pagination.current || 1);
     setLimit(pagination.pageSize || 10);
+
+    if (sorter && sorter.order) {
+      // Map 'ascend' -> 'asc', 'descend' -> 'desc'
+      setSortBy(sorter.field === "title" ? "title_i18n" : sorter.field);
+      setSortOrder(sorter.order === "descend" ? "desc" : "asc");
+    } else {
+      setSortBy("created_at");
+      setSortOrder("desc");
+    }
   };
 
-  // Xử lý Xóa bài viết
   const handleDelete = (id: string, title: string) => {
     modal.confirm({
       title: "Xác nhận xóa bài viết",
       content: (
         <span>
-          Bạn có chắc chắn muốn xóa bài viết <strong>{title}</strong>? Hành động
-          này không thể hoàn tác.
+          Bạn có chắc chắn muốn xóa bài viết <strong>{title}</strong>?
         </span>
       ),
       okText: "Xóa",
@@ -93,8 +107,7 @@ export default function NewsPage() {
         try {
           await newsService.deleteNews(id);
           message.success("Đã xóa bài viết thành công");
-          if (data.length === 1 && page > 1) setPage(page - 1);
-          else fetchNews();
+          fetchNews();
         } catch (error: any) {
           message.error(error.message || "Lỗi khi xóa bài viết");
         }
@@ -102,7 +115,6 @@ export default function NewsPage() {
     });
   };
 
-  // Cấu hình UI cho các Trạng thái
   const statusConfig: Record<NewsStatus, { color: string; label: string }> = {
     DRAFT: { color: "default", label: "Bản nháp" },
     PUBLISHED: { color: "success", label: "Đã xuất bản" },
@@ -112,16 +124,10 @@ export default function NewsPage() {
 
   const columns = [
     {
-      title: "STT",
-      key: "index",
-      width: 60,
-      align: "center" as const,
-      render: (_: any, __: any, index: number) =>
-        (page - 1) * limit + index + 1,
-    },
-    {
       title: "Tiêu đề bài viết (VI)",
+      dataIndex: "title",
       key: "title",
+      sorter: true, // Bật sort cho tiêu đề
       render: (_: any, record: NewsAdmin) => (
         <span className="font-medium text-[#1b1c1c] text-[15px]">
           {record.title_i18n?.vi || "N/A"}
@@ -131,7 +137,7 @@ export default function NewsPage() {
     {
       title: "Tác giả",
       key: "author",
-      width: 180,
+      width: 150,
       render: (_: any, record: NewsAdmin) => (
         <span className="text-gray-600">
           {record.author?.full_name || "Admin"}
@@ -156,19 +162,18 @@ export default function NewsPage() {
       title: "Ngày tạo",
       dataIndex: "created_at",
       key: "created_at",
-      width: 160,
+      width: 180,
+      sorter: true, // Bật sort cho ngày tạo
+      defaultSortOrder: "descend" as const,
       render: (dateString: string) => {
-        if (!dateString) return "N/A";
         const date = new Date(dateString);
         return (
           <span className="text-[#1b1c1c]">
             {date.toLocaleDateString("vi-VN")}{" "}
-            <span className="text-gray-500 text-[12px]">
-              {date.toLocaleTimeString("vi-VN", {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </span>
+            {date.toLocaleTimeString("vi-VN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </span>
         );
       },
@@ -176,7 +181,7 @@ export default function NewsPage() {
     {
       title: "Hành động",
       key: "action",
-      width: 120,
+      width: 100,
       align: "center" as const,
       render: (_: any, record: NewsAdmin) => (
         <Space size="middle">
@@ -233,7 +238,7 @@ export default function NewsPage() {
             allowClear
           />
           <Select
-            placeholder="Lọc theo trạng thái"
+            placeholder="Trạng thái"
             className="w-48"
             allowClear
             value={filterStatus}
@@ -253,10 +258,12 @@ export default function NewsPage() {
             onClick={() => {
               setSearchText("");
               setFilterStatus(undefined);
+              setSortBy("created_at");
+              setSortOrder("desc");
               setPage(1);
             }}
           >
-            Xóa bộ lọc
+            Xóa bộ lọc & Sắp xếp
           </Button>
         </Space>
       </Card>

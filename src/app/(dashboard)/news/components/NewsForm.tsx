@@ -19,6 +19,8 @@ import { RHFSelect } from "@/components/ui/form/RHFSelect";
 import { RHFEditor } from "@/components/ui/form/RHFEditor";
 import { RHFImageUpload } from "@/components/ui/form/RHFImageUpload";
 
+import { PlusOutlined } from "@ant-design/icons";
+
 interface NewsFormProps {
   isEditing: boolean;
   initialData?: NewsDetail | null;
@@ -61,23 +63,18 @@ export default function NewsForm({
     },
   });
 
-  // Tự động tạo slug
-  const titleVi = watch("title_vi");
-  const titleEn = watch("title_en");
-  const titleZh = watch("title_zh");
-
-  useEffect(() => {
-    if (!isEditing && titleVi)
-      setValue("slug_vi", generateSlug(titleVi), { shouldValidate: true });
-  }, [titleVi, isEditing, setValue]);
-  useEffect(() => {
-    if (!isEditing && titleEn)
-      setValue("slug_en", generateSlug(titleEn), { shouldValidate: true });
-  }, [titleEn, isEditing, setValue]);
-  useEffect(() => {
-    if (!isEditing && titleZh)
-      setValue("slug_zh", generateSlug(titleZh), { shouldValidate: true });
-  }, [titleZh, isEditing, setValue]);
+  const handleManualGenerateSlug = (lang: "vi" | "en" | "zh") => {
+    const titleValue = watch(`title_${lang}` as any);
+    if (!titleValue) {
+      message.warning(
+        `Vui lòng nhập tiêu đề ${lang.toUpperCase()} trước khi tạo slug`,
+      );
+      return;
+    }
+    const newSlug = generateSlug(titleValue);
+    setValue(`slug_${lang}` as any, newSlug, { shouldValidate: true });
+    message.success(`Đã tạo slug ${lang.toUpperCase()}`);
+  };
 
   // Fetch danh sách danh mục
   useEffect(() => {
@@ -152,12 +149,23 @@ export default function NewsForm({
             />
           </Col>
           <Col span={12}>
+            {/* THÊM NÚT BẤM VÀO ĐÂY */}
             <RHFInput
               name={`slug_${lang}`}
               control={control}
               label={slugLabel}
               placeholder="duong-dan-seo"
               required={lang === "vi"}
+              customAddon={
+                <Button
+                  type="text"
+                  size="small"
+                  className="text-[#2E7D32] hover:text-[#1b6d24] flex items-center gap-1 font-medium"
+                  onClick={() => handleManualGenerateSlug(lang)}
+                >
+                  <PlusOutlined style={{ fontSize: "12px" }} /> Tạo Slug
+                </Button>
+              }
             />
           </Col>
         </Row>
