@@ -29,6 +29,7 @@ import { SETTING_KEYS, SettingValue } from "@/types/setting";
 import { settingService } from "@/lib/services/setting.service";
 import { RHFInput } from "@/components/ui/form/RHFInput";
 import { RHFImageUpload } from "@/components/ui/form/RHFImageUpload";
+import { Alert } from "antd";
 
 const { Title, Text } = Typography;
 
@@ -61,10 +62,20 @@ export default function SettingsPage() {
   const onSubmit = async (data: Record<string, SettingValue>) => {
     setIsSaving(true);
     try {
-      await settingService.updateMultipleSettings(data);
-      message.success("Đã cập nhật toàn bộ cài đặt hệ thống");
+      // BƯỚC TRANSFORM DỮ LIỆU:
+      // Từ: { "hotline": { "value": "..." }, "site_name": { "vi": "..." } }
+      // Sang: [ { key: "hotline", value: {...} }, { key: "site_name", value: {...} } ]
+      const bulkData = Object.entries(data).map(([key, value]) => ({
+        key,
+        value,
+      }));
+
+      // Gọi API Bulk mới
+      await settingService.updateBulkSettings(bulkData);
+
+      message.success("Đã cập nhật toàn bộ cài đặt hệ thống (Bulk Update)");
     } catch (error: any) {
-      message.error(error.message || "Lỗi cập nhật");
+      message.error(error.message || "Lỗi khi cập nhật cài đặt");
     } finally {
       setIsSaving(false);
     }
@@ -197,7 +208,7 @@ export default function SettingsPage() {
       children: (
         <div className="max-w-5xl space-y-4">
           <Alert
-            message="Cấu hình này sẽ được sử dụng nếu Trang chủ hoặc các trang con không có SEO riêng."
+            title="Cấu hình này sẽ được sử dụng nếu Trang chủ hoặc các trang con không có SEO riêng."
             type="info"
             showIcon
             className="mb-4"
@@ -358,7 +369,7 @@ export default function SettingsPage() {
           styles={{ body: { padding: 0 } }}
         >
           <Tabs
-            tabPosition="left"
+            tabPlacement="left"
             items={tabItems}
             className="min-h-[700px] setting-tabs"
           />
@@ -393,6 +404,3 @@ export default function SettingsPage() {
     </Spin>
   );
 }
-
-// Bổ sung import Alert từ antd
-import { Alert } from "antd";
