@@ -102,7 +102,7 @@ export default function UserModal({
       <form onSubmit={handleSubmit(onSubmit)} className="mt-6">
         {isEditing && (
           <Alert
-            message="Lưu ý: Để trống ô mật khẩu nếu bạn không muốn thay đổi mật khẩu của nhân viên này."
+            title="Lưu ý: Để trống ô mật khẩu nếu bạn không muốn thay đổi mật khẩu của nhân viên này."
             type="info"
             showIcon
             className="mb-6 rounded-[4px]"
