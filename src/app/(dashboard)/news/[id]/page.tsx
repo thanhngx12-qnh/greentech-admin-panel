@@ -37,7 +37,7 @@ export default function EditNewsPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <Spin size="large" tip="Đang tải dữ liệu bài viết..." />
+        <Spin size="large" description="Đang tải dữ liệu bài viết..." />
       </div>
     );
   }
