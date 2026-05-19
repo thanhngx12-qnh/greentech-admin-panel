@@ -40,7 +40,6 @@ export default function ProfilePage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
 
-  // Logic Fix Hydration Error cho Next.js 16
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
@@ -111,12 +110,13 @@ export default function ProfilePage() {
         </span>
       ),
       children: (
-        <div className="max-w-xl">
+        /* FIX: Thay max-w-xl bằng max-w-[560px] */
+        <div className="max-w-[560px] w-full">
           <Title level={4} className="mb-6 text-[#1b1c1c]">
             Thông tin tài khoản
           </Title>
-          <div className="mb-6 flex items-center flex-wrap gap-y-2">
-            <div className="mr-8">
+          <div className="mb-8 flex items-center flex-wrap gap-6">
+            <div>
               <Text type="secondary" className="block text-[12px] mb-1">
                 Địa chỉ Email
               </Text>
@@ -131,7 +131,7 @@ export default function ProfilePage() {
               <Tag
                 color="gold"
                 icon={<SafetyCertificateOutlined />}
-                className="rounded-[4px]"
+                className="rounded-[4px] px-2 py-0.5"
               >
                 {user?.role}
               </Tag>
@@ -146,6 +146,7 @@ export default function ProfilePage() {
               name="full_name"
               control={profileForm.control}
               label="Họ và tên hiển thị"
+              placeholder="Nhập họ tên của bạn"
               required
             />
             <Button
@@ -153,7 +154,7 @@ export default function ProfilePage() {
               htmlType="submit"
               icon={<SaveOutlined />}
               loading={isUpdating}
-              className="bg-[#2E7D32] h-10 px-6"
+              className="bg-[#2E7D32] h-10 px-8 font-medium mt-2"
             >
               Lưu thay đổi
             </Button>
@@ -169,10 +170,15 @@ export default function ProfilePage() {
         </span>
       ),
       children: (
-        <div className="max-w-xl">
+        /* FIX: Thay max-w-xl bằng max-w-[560px] */
+        <div className="max-w-[560px] w-full">
           <Title level={4} className="mb-6 text-[#1b1c1c]">
             Thay đổi mật khẩu
           </Title>
+          <Text type="secondary" className="block mb-6">
+            Mật khẩu mới của bạn phải có ít nhất 6 ký tự để đảm bảo an toàn cho
+            tài khoản.
+          </Text>
           <form
             onSubmit={passwordForm.handleSubmit(onChangePassword)}
             className="space-y-4"
@@ -182,6 +188,7 @@ export default function ProfilePage() {
               control={passwordForm.control}
               label="Mật khẩu hiện tại"
               type="password"
+              placeholder="••••••••"
               required
             />
             <RHFInput
@@ -189,6 +196,7 @@ export default function ProfilePage() {
               control={passwordForm.control}
               label="Mật khẩu mới"
               type="password"
+              placeholder="Tối thiểu 6 ký tự"
               required
             />
             <RHFInput
@@ -196,6 +204,7 @@ export default function ProfilePage() {
               control={passwordForm.control}
               label="Xác nhận mật khẩu mới"
               type="password"
+              placeholder="Nhập lại mật khẩu mới"
               required
             />
             <Button
@@ -204,9 +213,9 @@ export default function ProfilePage() {
               danger
               icon={<LockOutlined />}
               loading={isUpdating}
-              className="h-10 px-6 mt-2"
+              className="h-10 px-8 font-medium mt-4"
             >
-              Đổi mật khẩu
+              Cập nhật mật khẩu
             </Button>
           </form>
         </div>
@@ -214,7 +223,7 @@ export default function ProfilePage() {
     },
   ];
 
-  if (!mounted) return null; // Ngăn Hydration mismatch khi chưa mount
+  if (!mounted) return null;
 
   return (
     <Spin spinning={loading} description="Đang nạp dữ liệu hồ sơ...">
@@ -226,7 +235,7 @@ export default function ProfilePage() {
           Hồ sơ của tôi
         </Title>
         <Text type="secondary">
-          Cấu hình thông tin tài khoản cá nhân và mật khẩu hệ thống
+          Cấu hình thông tin tài khoản cá nhân và thiết lập bảo mật
         </Text>
       </div>
 
@@ -236,9 +245,9 @@ export default function ProfilePage() {
         styles={{ body: { padding: 0 } }}
       >
         <Tabs
-          tabPlacement="left" // FIX: Đổi tabPosition sang tabPlacement
+          tabPlacement="left"
           items={tabItems}
-          className="min-h-[500px] profile-tabs"
+          className="min-h-[550px] profile-tabs"
         />
       </Card>
 
@@ -257,6 +266,7 @@ export default function ProfilePage() {
           padding: 14px 0 !important;
           margin: 4px 0 !important;
           border-radius: 0 !important;
+          transition: all 0.2s;
         }
         .profile-tabs .ant-tabs-tab-active {
           background: #fff !important;
