@@ -1,7 +1,7 @@
 // File: src/components/layout/Sidebar.tsx
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Layout, Menu } from "antd";
 import {
   DashboardOutlined,
@@ -13,7 +13,6 @@ import {
   PictureOutlined,
   BookOutlined,
   SettingOutlined,
-  SolutionOutlined,
 } from "@ant-design/icons";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -26,6 +25,14 @@ interface SidebarProps {
 export default function Sidebar({ collapsed }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
+
+  // FIX HYDRATION ERROR: Khởi tạo trạng thái mounted
+  const [mounted, setMounted] = useState(false);
+
+  // Chỉ khi đã mount xong trên client mới set true
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Xác định Key nào nên được mở mặc định dựa trên pathname
   const getDefaultOpenKeys = () => {
@@ -102,21 +109,26 @@ export default function Sidebar({ collapsed }: SidebarProps) {
       width={260}
       theme="dark"
       className="z-10 shadow-lg min-h-screen"
-      style={{ backgroundColor: "#1A1C1E" }} // Dark charcoal
+      style={{ backgroundColor: "#1A1C1E" }}
     >
+      {/* Vẫn render khung logo để layout không bị giật */}
       <div className="h-16 flex items-center justify-center font-bold text-lg text-white border-b border-gray-700 overflow-hidden whitespace-nowrap bg-[#1A1C1E]">
         {collapsed ? "GT" : "GREENTECH ANALYSIS"}
       </div>
-      <Menu
-        theme="dark"
-        mode="inline"
-        selectedKeys={[getSelectedKey()]}
-        defaultOpenKeys={getDefaultOpenKeys()}
-        items={menuItems}
-        onClick={({ key }) => router.push(key)}
-        style={{ backgroundColor: "#1A1C1E" }}
-        className="mt-2 border-none"
-      />
+
+      {/* CHỈ RENDER MENU KHI ĐÃ MOUNT XONG (FIX HYDRATION) */}
+      {mounted && (
+        <Menu
+          theme="dark"
+          mode="inline"
+          selectedKeys={[getSelectedKey()]}
+          defaultOpenKeys={getDefaultOpenKeys()}
+          items={menuItems}
+          onClick={({ key }) => router.push(key)}
+          style={{ backgroundColor: "#1A1C1E" }}
+          className="mt-2 border-none"
+        />
+      )}
     </Sider>
   );
 }
