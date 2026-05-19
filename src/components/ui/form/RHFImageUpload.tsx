@@ -23,7 +23,7 @@ import { mediaService } from "@/lib/services/media.service";
 
 interface RHFImageUploadProps {
   name: string;
-  control: Control<any>;
+  control: any;
   label: string;
   required?: boolean;
 }

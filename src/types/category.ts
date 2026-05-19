@@ -3,32 +3,33 @@ import { z } from "zod";
 
 export const CategoryTypeEnum = z.enum(["NEWS", "SERVICE", "STANDARD", "JOB"]);
 
-// Định nghĩa Schema con cho đa ngôn ngữ, đảm bảo luôn trả về string (dù là rỗng)
-const i18nSchema = z.object({
-  vi: z.string().min(1, "Tiếng Việt là bắt buộc"),
-  en: z.string().catch(""), // Dùng catch thay cho default/optional để ép kiểu string chắc chắn
-  zh: z.string().catch(""),
-});
-
-const i18nOptionalSchema = z.object({
-  vi: z.string().catch(""),
-  en: z.string().catch(""),
-  zh: z.string().catch(""),
-});
-
+// Định nghĩa schema thuần túy, không dùng coerce hay catch để Zod tự suy luận chuẩn 100%
 export const categoryFormSchema = z.object({
   slug: z.string().min(1, "Vui lòng nhập đường dẫn SEO (slug)"),
   type: CategoryTypeEnum,
-  name_i18n: i18nSchema,
-  desc_i18n: i18nOptionalSchema,
-  order: z.coerce.number().int().default(0),
-  is_active: z.boolean().default(true),
+  name_i18n: z.object({
+    vi: z.string().min(1, "Tiếng Việt là bắt buộc"),
+    en: z.string().optional(),
+    zh: z.string().optional(),
+  }),
+  desc_i18n: z
+    .object({
+      vi: z.string().optional(),
+      en: z.string().optional(),
+      zh: z.string().optional(),
+    })
+    .optional(),
+  order: z.number(), // Chỉ cần z.number() thuần túy
+  is_active: z.boolean(),
 });
 
-// Ép kiểu chuẩn để React Hook Form nhận diện đúng bộ Keys
+// Zod tự động tạo Type hoàn chỉnh, không có unknown
 export type CategoryFormInputs = z.infer<typeof categoryFormSchema>;
 
-// --- INTERFACES CHO DỮ LIỆU API (Giữ nguyên) ---
+// ==========================================
+// INTERFACES CHO API (Giữ nguyên)
+// ==========================================
+
 export interface I18nRecord {
   vi: string;
   en?: string;
@@ -58,4 +59,9 @@ export interface CategoryListResponse {
   success: boolean;
   data: Category[];
   meta: PaginationMeta;
+}
+
+export interface CategoryResponse {
+  success: boolean;
+  data: Category;
 }

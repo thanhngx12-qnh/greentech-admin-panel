@@ -5,7 +5,7 @@ import { Select, SelectProps } from "antd";
 
 interface RHFSelectProps extends SelectProps {
   name: string;
-  control: Control<any>;
+  control: any;
   label: string;
   required?: boolean;
   options: { label: string; value: string | number | boolean }[];

@@ -14,6 +14,7 @@ import { categoryService } from "@/lib/services/category.service";
 import { generateSlug } from "@/utils/string";
 import { RHFInput } from "@/components/ui/form/RHFInput";
 import { RHFSelect } from "@/components/ui/form/RHFSelect";
+import { RHFInputNumber } from "@/components/ui/form/RHFInputNumber"; // Thêm import này
 
 interface CategoryModalProps {
   isOpen: boolean;
@@ -39,7 +40,7 @@ export default function CategoryModal({
     watch,
     formState: { isSubmitting },
   } = useForm<CategoryFormInputs>({
-    resolver: zodResolver(categoryFormSchema),
+    resolver: zodResolver(categoryFormSchema), // Sạch sẽ, không cần as any
     defaultValues: {
       slug: "",
       type: "NEWS",
@@ -50,7 +51,6 @@ export default function CategoryModal({
     },
   });
 
-  // Hàm tạo slug thủ công
   const handleGenerateSlugManual = () => {
     const nameVi = watch("name_i18n.vi");
     if (!nameVi) {
@@ -189,7 +189,7 @@ export default function CategoryModal({
     >
       <form onSubmit={handleSubmit(onSubmit)} className="mt-4">
         <div className="mb-6 border border-[#E0E0E0] p-4 rounded-[4px] bg-[#F5F7FA]">
-          <Tabs items={tabItems} />
+          <Tabs items={tabItems} type="line" />
         </div>
 
         <Row gutter={16}>
@@ -230,11 +230,11 @@ export default function CategoryModal({
 
         <Row gutter={16}>
           <Col span={12}>
-            <RHFInput
+            {/* THAY THẾ BẰNG RHFInputNumber ĐỂ TRẢ VỀ NUMBER CHO ZOD */}
+            <RHFInputNumber
               name="order"
               control={control}
               label="Thứ tự hiển thị"
-              type="number"
               required
             />
           </Col>

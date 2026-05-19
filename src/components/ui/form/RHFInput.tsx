@@ -6,7 +6,7 @@ import { TextAreaProps } from "antd/es/input";
 
 interface RHFInputProps extends Omit<InputProps, "name" | "defaultValue"> {
   name: string;
-  control: Control<any>;
+  control: any;
   label: string;
   required?: boolean;
   isTextArea?: boolean;

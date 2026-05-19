@@ -8,7 +8,7 @@ interface RHFInputNumberProps extends Omit<
   "name" | "defaultValue"
 > {
   name: string;
-  control: Control<any>;
+  control: any;
   label: string;
   required?: boolean;
 }
