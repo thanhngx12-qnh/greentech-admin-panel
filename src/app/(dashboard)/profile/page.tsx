@@ -245,7 +245,7 @@ export default function ProfilePage() {
         styles={{ body: { padding: 0 } }}
       >
         <Tabs
-          tabPlacement="left"
+          tabPosition="left"
           items={tabItems}
           className="min-h-[550px] profile-tabs"
         />

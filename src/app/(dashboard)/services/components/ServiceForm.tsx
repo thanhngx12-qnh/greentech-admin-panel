@@ -62,6 +62,7 @@ export default function ServiceForm({
     formState: { isSubmitting },
   } = useForm<ServiceFormInputs>({
     resolver: zodResolver(serviceFormSchema),
+    // Khai báo đủ defaultValues để khớp 100% với Schema mới
     defaultValues: {
       category_id: undefined as any,
       status: "DRAFT",
@@ -305,15 +306,14 @@ export default function ServiceForm({
                 ]}
               />
               <Row gutter={12}>
+                {/* FIX: Đã gỡ bỏ thẻ Col lồng nhau gây lỗi giao diện */}
                 <Col span={14}>
-                  <Col span={14}>
-                    <RHFInputNumber
-                      name="price"
-                      control={control}
-                      label="Giá dự kiến"
-                      placeholder="1.000.000"
-                    />
-                  </Col>
+                  <RHFInputNumber
+                    name="price"
+                    control={control}
+                    label="Giá dự kiến"
+                    placeholder="1.000.000"
+                  />
                 </Col>
                 <Col span={10}>
                   <RHFSelect

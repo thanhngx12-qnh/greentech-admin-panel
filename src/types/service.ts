@@ -3,48 +3,35 @@ import { z } from "zod";
 
 export type ServiceStatus = "DRAFT" | "PUBLISHED" | "UNPUBLISHED";
 
-const seoSchema = z.object({
-  meta_title: z.string().optional(),
-  meta_description: z.string().optional(),
-  og_image: z.string().url("Link không hợp lệ").optional().or(z.literal("")),
-});
-
+// Làm sạch schema: Bỏ coerce, bỏ default, dùng catch để ép kiểu an toàn
 export const serviceFormSchema = z.object({
   category_id: z.number({ required_error: "Vui lòng chọn danh mục" }),
-  status: z.enum(["DRAFT", "PUBLISHED", "UNPUBLISHED"]).default("DRAFT"),
-  featured_image: z
-    .string()
-    .url("Link không hợp lệ")
-    .optional()
-    .or(z.literal("")),
+  status: z.enum(["DRAFT", "PUBLISHED", "UNPUBLISHED"]),
+  featured_image: z.string().catch(""),
 
-  // Dữ liệu thương mại
-  price: z.coerce.number().min(0, "Giá không được âm").optional().default(0),
-  currency: z.string().default("VND"),
-  duration: z.string().optional(),
+  // Dữ liệu thương mại: RHFInputNumber đã trả về number rồi nên chỉ cần z.number()
+  // Dùng catch(0) để nếu người dùng xóa trắng ô input thì mặc định là 0
+  price: z.number().catch(0),
+  currency: z.string().catch("VND"),
+  duration: z.string().catch(""),
 
   // Đa ngôn ngữ (vi, en, zh)
   title_vi: z.string().min(1, "Tên dịch vụ (VI) là bắt buộc"),
   content_vi: z.string().min(1, "Nội dung (VI) là bắt buộc"),
   slug_vi: z.string().min(1, "Slug (VI) là bắt buộc"),
 
-  title_en: z.string().optional(),
-  content_en: z.string().optional(),
-  slug_en: z.string().optional(),
+  title_en: z.string().catch(""),
+  content_en: z.string().catch(""),
+  slug_en: z.string().catch(""),
 
-  title_zh: z.string().optional(),
-  content_zh: z.string().optional(),
-  slug_zh: z.string().optional(),
+  title_zh: z.string().catch(""),
+  content_zh: z.string().catch(""),
+  slug_zh: z.string().catch(""),
 
-  seo_i18n: z
-    .object({
-      vi: seoSchema.optional(),
-      en: seoSchema.optional(),
-      zh: seoSchema.optional(),
-    })
-    .optional(),
+  seo_i18n: z.any().optional(),
 });
 
+// TypeScript giờ đây sẽ nội suy chính xác 100% mà không bị unknown
 export type ServiceFormInputs = z.infer<typeof serviceFormSchema>;
 
 export interface ServiceAdmin {
