@@ -23,22 +23,25 @@ export default function Header({ collapsed, setCollapsed }: HeaderProps) {
   const router = useRouter();
   const { message } = AntdApp.useApp();
 
+  // Xử lý Đăng xuất
   const handleLogout = async () => {
     try {
       await authService.logout();
       message.success("Đã đăng xuất khỏi hệ thống");
       router.push("/login");
-      router.refresh(); // Ép Next.js tải lại để chạy qua Middleware (bảo vệ route)
+      router.refresh();
     } catch (error) {
       message.error("Lỗi khi đăng xuất");
     }
   };
 
+  // Cấu hình Menu người dùng
   const userMenuItems = [
     {
       key: "profile",
       icon: <UserOutlined />,
       label: "Hồ sơ của tôi",
+      onClick: () => router.push("/profile"), // Chuyển hướng tới trang cá nhân
     },
     {
       type: "divider" as const,
@@ -48,7 +51,7 @@ export default function Header({ collapsed, setCollapsed }: HeaderProps) {
       icon: <LogoutOutlined />,
       label: "Đăng xuất",
       danger: true,
-      onClick: handleLogout, // Gắn logic Đăng xuất
+      onClick: handleLogout,
     },
   ];
 
@@ -65,8 +68,12 @@ export default function Header({ collapsed, setCollapsed }: HeaderProps) {
       />
 
       <div>
-        <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
-          {/* FIX UI: Sửa class hover, bỏ border gây tăng height, fix chiều cao h-10 để box-model luôn ổn định */}
+        <Dropdown
+          menu={{ items: userMenuItems }}
+          placement="bottomRight"
+          arrow
+          trigger={["click"]} // Mở bằng cách click để trải nghiệm chuyên nghiệp hơn
+        >
           <div className="cursor-pointer flex items-center gap-2 hover:bg-gray-100 px-3 h-10 rounded-[4px] transition-colors">
             <Avatar
               style={{ backgroundColor: "#2E7D32" }}
