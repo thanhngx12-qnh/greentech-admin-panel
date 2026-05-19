@@ -51,12 +51,12 @@ export default function JobPostingsPage() {
   const fetchJobs = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await careerService.getJobs({
+      // FIX TẠI ĐÂY: Thêm `: any` để loại bỏ lỗi ép kiểu của Axios
+      const res: any = await careerService.getJobs({
         page,
         limit,
         search: searchText || undefined,
         status: filterStatus,
-        // @ts-ignore - Bổ sung params sort
         sortBy,
         order: sortOrder,
       });
@@ -79,7 +79,6 @@ export default function JobPostingsPage() {
     setLimit(pagination.pageSize || 10);
 
     if (sorter && sorter.order) {
-      // Map field title_i18n cho phù hợp backend nếu cần
       setSortBy(sorter.field === "title" ? "title_vi" : sorter.field);
       setSortOrder(sorter.order === "descend" ? "desc" : "asc");
     } else {
@@ -124,7 +123,7 @@ export default function JobPostingsPage() {
     },
     {
       title: "Vị trí tuyển dụng",
-      dataIndex: "title", // Thêm dataIndex để sorter hoạt động
+      dataIndex: "title",
       key: "title",
       sorter: true,
       render: (_: any, record: JobPosting) => (
