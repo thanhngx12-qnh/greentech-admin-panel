@@ -3,17 +3,17 @@ import { z } from "zod";
 
 export const CategoryTypeEnum = z.enum(["NEWS", "SERVICE", "STANDARD", "JOB"]);
 
-// Định nghĩa Schema cho i18n ổn định hơn cho Form
+// Định nghĩa Schema con cho đa ngôn ngữ, đảm bảo luôn trả về string (dù là rỗng)
 const i18nSchema = z.object({
   vi: z.string().min(1, "Tiếng Việt là bắt buộc"),
-  en: z.string().optional().default(""),
-  zh: z.string().optional().default(""),
+  en: z.string().catch(""), // Dùng catch thay cho default/optional để ép kiểu string chắc chắn
+  zh: z.string().catch(""),
 });
 
 const i18nOptionalSchema = z.object({
-  vi: z.string().optional().default(""),
-  en: z.string().optional().default(""),
-  zh: z.string().optional().default(""),
+  vi: z.string().catch(""),
+  en: z.string().catch(""),
+  zh: z.string().catch(""),
 });
 
 export const categoryFormSchema = z.object({
@@ -21,15 +21,14 @@ export const categoryFormSchema = z.object({
   type: CategoryTypeEnum,
   name_i18n: i18nSchema,
   desc_i18n: i18nOptionalSchema,
-  // Dùng coerce để đảm bảo input từ form luôn là number
-  order: z.coerce.number().default(0),
+  order: z.coerce.number().int().default(0),
   is_active: z.boolean().default(true),
 });
 
-// FIX: Chỉ sử dụng z.infer để TypeScript lấy đúng bộ Keys (String Literals)
+// Ép kiểu chuẩn để React Hook Form nhận diện đúng bộ Keys
 export type CategoryFormInputs = z.infer<typeof categoryFormSchema>;
 
-// --- INTERFACES CHO API (Giữ nguyên để map dữ liệu) ---
+// --- INTERFACES CHO DỮ LIỆU API (Giữ nguyên) ---
 export interface I18nRecord {
   vi: string;
   en?: string;
@@ -59,9 +58,4 @@ export interface CategoryListResponse {
   success: boolean;
   data: Category[];
   meta: PaginationMeta;
-}
-
-export interface CategoryResponse {
-  success: boolean;
-  data: Category;
 }

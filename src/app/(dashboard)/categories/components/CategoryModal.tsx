@@ -40,7 +40,6 @@ export default function CategoryModal({
     formState: { isSubmitting },
   } = useForm<CategoryFormInputs>({
     resolver: zodResolver(categoryFormSchema),
-    // defaultValues phải có đủ các key như trong schema
     defaultValues: {
       slug: "",
       type: "NEWS",
@@ -50,6 +49,16 @@ export default function CategoryModal({
       is_active: true,
     },
   });
+
+  // Hàm tạo slug thủ công
+  const handleGenerateSlugManual = () => {
+    const nameVi = watch("name_i18n.vi");
+    if (!nameVi) {
+      return message.warning("Vui lòng nhập tên tiếng Việt trước");
+    }
+    setValue("slug", generateSlug(nameVi), { shouldValidate: true });
+    message.success("Đã tạo slug thành công");
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -85,7 +94,7 @@ export default function CategoryModal({
 
   const onSubmit = async (data: CategoryFormInputs) => {
     try {
-      if (isEditing) {
+      if (isEditing && initialData) {
         await categoryService.updateCategory(initialData.id, data);
         message.success("Cập nhật danh mục thành công!");
       } else {
@@ -175,12 +184,12 @@ export default function CategoryModal({
       onCancel={onClose}
       footer={null}
       width={700}
-      destroyOnHidden // Đã sửa theo Antd v5
-      mask={{ closable: false }} // Đã sửa theo Antd v5
+      destroyOnHidden
+      mask={{ closable: false }}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="mt-4">
         <div className="mb-6 border border-[#E0E0E0] p-4 rounded-[4px] bg-[#F5F7FA]">
-          <Tabs items={tabItems} type="line" />
+          <Tabs items={tabItems} />
         </div>
 
         <Row gutter={16}>
@@ -209,6 +218,7 @@ export default function CategoryModal({
                 <Button
                   type="text"
                   size="small"
+                  className="text-[#2E7D32] font-medium"
                   onClick={handleGenerateSlugManual}
                 >
                   Tạo Slug
