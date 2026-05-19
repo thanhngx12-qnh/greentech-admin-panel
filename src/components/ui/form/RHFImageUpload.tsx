@@ -1,11 +1,23 @@
 // File: src/components/ui/form/RHFImageUpload.tsx
+"use client";
+
 import React, { useState } from "react";
 import { Controller, Control } from "react-hook-form";
-import { Tabs, Input, Upload, Button, App as AntdApp, Spin } from "antd";
+import {
+  Input,
+  Upload,
+  Button,
+  App as AntdApp,
+  Spin,
+  Segmented,
+  Space,
+} from "antd";
 import {
   UploadOutlined,
   LinkOutlined,
   DeleteOutlined,
+  PictureOutlined,
+  FileImageOutlined,
 } from "@ant-design/icons";
 import { mediaService } from "@/lib/services/media.service";
 
@@ -24,12 +36,27 @@ export function RHFImageUpload({
 }: RHFImageUploadProps) {
   const { message } = AntdApp.useApp();
   const [uploading, setUploading] = useState(false);
+  const [mode, setMode] = useState<string | number>("upload");
 
   return (
     <div className="mb-6">
-      <label className="block text-[14px] font-medium text-[#1b1c1c] mb-2">
-        {label} {required && <span className="text-[#D32F2F]">*</span>}
-      </label>
+      <div className="flex justify-between items-center mb-2">
+        <label className="block text-[14px] font-semibold text-[#1b1c1c]">
+          {label} {required && <span className="text-[#D32F2F]">*</span>}
+        </label>
+
+        {/* Dùng Segmented thay cho Tabs để tiết kiệm diện tích */}
+        <Segmented
+          size="small"
+          value={mode}
+          onChange={(value) => setMode(value)}
+          options={[
+            { value: "upload", icon: <UploadOutlined /> },
+            { value: "url", icon: <LinkOutlined /> },
+          ]}
+          className="bg-gray-100 p-0.5 rounded-[4px]"
+        />
+      </div>
 
       <Controller
         name={name}
@@ -41,95 +68,101 @@ export function RHFImageUpload({
               const res = await mediaService.upload(file);
               if (res.success) {
                 onChange(res.data.location);
-                message.success("Tải ảnh lên thành công");
+                message.success("Tải ảnh thành công");
               }
             } catch (err: any) {
               message.error(err.message || "Lỗi khi tải ảnh");
             } finally {
               setUploading(false);
             }
-            return false; // Ngăn Antd tự động upload theo cách cũ
+            return false;
           };
 
           return (
-            <div
-              className={`p-4 border rounded-[4px] bg-white ${error ? "border-[#D32F2F]" : "border-[#E0E0E0]"}`}
-            >
-              <Tabs
-                defaultActiveKey="upload"
-                size="small"
-                type="card"
-                items={[
-                  {
-                    key: "upload",
-                    label: (
-                      <span>
-                        <UploadOutlined /> Tải ảnh lên
-                      </span>
-                    ),
-                    children: (
-                      <div className="py-2">
-                        <Upload
-                          accept="image/*"
-                          showUploadList={false}
-                          beforeUpload={handleUpload}
-                          disabled={uploading}
-                        >
-                          <Button
-                            icon={<UploadOutlined />}
-                            loading={uploading}
-                            block
-                          >
-                            Chọn file từ máy tính
-                          </Button>
-                        </Upload>
-                      </div>
-                    ),
-                  },
-                  {
-                    key: "url",
-                    label: (
-                      <span>
-                        <LinkOutlined /> Dán đường dẫn
-                      </span>
-                    ),
-                    children: (
-                      <div className="py-2">
-                        <Input
-                          placeholder="https://example.com/image.jpg"
-                          value={value}
-                          onChange={(e) => onChange(e.target.value)}
-                          allowClear
-                        />
-                      </div>
-                    ),
-                  },
-                ]}
-              />
+            <div className="space-y-3">
+              {/* VÙNG NHẬP LIỆU */}
+              <div
+                className={`p-3 border rounded-[4px] bg-[#fafafa] transition-all ${
+                  error
+                    ? "border-[#D32F2F] bg-[#fff1f0]"
+                    : "border-[#E0E0E0] hover:border-[#2E7D32]"
+                }`}
+              >
+                {mode === "upload" ? (
+                  <Upload
+                    accept="image/*"
+                    showUploadList={false}
+                    beforeUpload={handleUpload}
+                    disabled={uploading}
+                    className="w-full"
+                  >
+                    <div className="flex flex-col items-center justify-center py-2 cursor-pointer">
+                      {uploading ? (
+                        <Spin size="small" description="Đang xử lý..." />
+                      ) : (
+                        <div className="flex items-center gap-2 text-[#2E7D32] font-medium">
+                          <UploadOutlined />
+                          <span>
+                            {value ? "Thay đổi ảnh" : "Chọn ảnh từ máy tính"}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </Upload>
+                ) : (
+                  <Input
+                    variant="borderless"
+                    placeholder="Dán link ảnh (https://...)"
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    prefix={<LinkOutlined className="text-gray-400" />}
+                    allowClear
+                    className="p-0"
+                  />
+                )}
+              </div>
 
-              {/* Preview & Delete */}
-              {value && (
-                <div className="mt-4 relative group border border-[#E0E0E0] rounded-[4px] overflow-hidden bg-[#F5F7FA]">
-                  <Spin spinning={uploading}>
-                    <img
-                      src={value}
-                      alt="Preview"
-                      className="w-full h-auto max-h-[250px] object-contain mx-auto display-block"
-                    />
-                  </Spin>
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* VÙNG PREVIEW NÂNG CẤP */}
+              {value ? (
+                <div className="relative group border border-[#E0E0E0] rounded-[4px] overflow-hidden bg-white shadow-sm aspect-video flex items-center justify-center">
+                  <img
+                    src={value}
+                    alt="Preview"
+                    className="w-full h-full object-contain bg-gray-50"
+                  />
+
+                  {/* Overlay khi hover */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2">
                     <Button
+                      size="small"
                       type="primary"
+                      icon={<FileImageOutlined />}
+                      onClick={() => window.open(value, "_blank")}
+                    >
+                      Xem ảnh
+                    </Button>
+                    <Button
+                      size="small"
                       danger
-                      shape="circle"
+                      type="primary"
                       icon={<DeleteOutlined />}
                       onClick={() => onChange("")}
-                    />
+                    >
+                      Xóa
+                    </Button>
                   </div>
                 </div>
+              ) : (
+                <div className="border border-dashed border-[#E0E0E0] rounded-[4px] py-8 flex flex-col items-center justify-center bg-gray-50/50">
+                  <PictureOutlined className="text-3xl text-gray-300 mb-2" />
+                  <span className="text-gray-400 text-xs">
+                    Chưa có ảnh hiển thị
+                  </span>
+                </div>
               )}
+
               {error && (
-                <span className="text-[#D32F2F] text-xs mt-2 block">
+                <span className="text-[#D32F2F] text-xs font-medium mt-1 block">
                   {error.message}
                 </span>
               )}
