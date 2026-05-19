@@ -50,12 +50,7 @@ export default function CategoryModal({
     },
   });
 
-  const handleGenerateSlugManual = () => {
-    const nameVi = watch("name_i18n.vi");
-    if (!nameVi) return message.warning("Vui lòng nhập tên Tiếng Việt");
-    setValue("slug", generateSlug(nameVi), { shouldValidate: true });
-  };
-
+  // Khi reset dữ liệu (Edit), cần đảm bảo các giá trị không bị undefined
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
@@ -72,8 +67,8 @@ export default function CategoryModal({
             en: initialData.desc_i18n?.en || "",
             zh: initialData.desc_i18n?.zh || "",
           },
-          order: initialData.order || 0,
-          is_active: initialData.is_active,
+          order: Number(initialData.order) || 0,
+          is_active: Boolean(initialData.is_active),
         });
       } else {
         reset({

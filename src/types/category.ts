@@ -7,18 +7,16 @@ import { z } from "zod";
 
 export const CategoryTypeEnum = z.enum(["NEWS", "SERVICE", "STANDARD", "JOB"]);
 
-// Định dạng object đa ngôn ngữ cơ bản (Thêm zh)
 export const i18nStringSchema = z.object({
   vi: z.string().min(1, "Tiếng Việt là bắt buộc"),
-  en: z.string().optional(),
-  zh: z.string().optional(),
+  en: z.string().optional().nullable(),
+  zh: z.string().optional().nullable(),
 });
 
-// Định dạng object đa ngôn ngữ không bắt buộc (Thêm zh)
 export const i18nOptionalStringSchema = z.object({
-  vi: z.string().optional(),
-  en: z.string().optional(),
-  zh: z.string().optional(),
+  vi: z.string().optional().nullable(),
+  en: z.string().optional().nullable(),
+  zh: z.string().optional().nullable(),
 });
 
 export const categoryFormSchema = z.object({
@@ -26,16 +24,19 @@ export const categoryFormSchema = z.object({
   type: CategoryTypeEnum,
   name_i18n: i18nStringSchema,
   desc_i18n: i18nOptionalStringSchema.optional(),
-  order: z.number().default(0),
+  // Sử dụng coerce để đảm bảo luôn là number và mặc định là 0
+  order: z.coerce.number().int().min(0).default(0),
   is_active: z.boolean().default(true),
 });
 
-export type CategoryFormInputs = z.infer<typeof categoryFormSchema>;
-
+// Chỉnh sửa Type Inference để đảm bảo không bị dính 'undefined' vào các trường có default
+export type CategoryFormInputs = z.input<typeof categoryFormSchema> & {
+  order: number;
+  is_active: boolean;
+};
 // ==========================================
-// 2. INTERFACES (Cấu trúc dữ liệu trả về)
+// 2. INTERFACES (Dữ liệu API)
 // ==========================================
-
 export interface I18nRecord {
   vi: string;
   en?: string;
