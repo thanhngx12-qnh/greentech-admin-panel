@@ -22,9 +22,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // THÊM suppressHydrationWarning vào đây để bỏ qua lỗi do Extension trình duyệt
     <html lang="vi" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning>
         <AntdRegistry>
           <ConfigProvider theme={themeConfig}>
             <AntdApp>{children}</AntdApp>

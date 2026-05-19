@@ -46,7 +46,7 @@ export function RHFInput({
               <Input
                 {...field}
                 {...inputProps}
-                addonAfter={customAddon} // Chèn nút bấm vào đây
+                spacecompact={customAddon} // Chèn nút bấm vào đây
                 status={error ? "error" : ""}
                 className="rounded-[4px]"
               />
