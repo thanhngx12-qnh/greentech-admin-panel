@@ -40,6 +40,7 @@ export default function CategoryModal({
     formState: { isSubmitting },
   } = useForm<CategoryFormInputs>({
     resolver: zodResolver(categoryFormSchema),
+    // defaultValues phải có đủ các key như trong schema
     defaultValues: {
       slug: "",
       type: "NEWS",
@@ -50,12 +51,11 @@ export default function CategoryModal({
     },
   });
 
-  // Khi reset dữ liệu (Edit), cần đảm bảo các giá trị không bị undefined
   useEffect(() => {
     if (isOpen) {
       if (initialData) {
         reset({
-          slug: initialData.slug,
+          slug: initialData.slug || "",
           type: initialData.type,
           name_i18n: {
             vi: initialData.name_i18n?.vi || "",
@@ -67,8 +67,8 @@ export default function CategoryModal({
             en: initialData.desc_i18n?.en || "",
             zh: initialData.desc_i18n?.zh || "",
           },
-          order: Number(initialData.order) || 0,
-          is_active: Boolean(initialData.is_active),
+          order: initialData.order ?? 0,
+          is_active: initialData.is_active ?? true,
         });
       } else {
         reset({
