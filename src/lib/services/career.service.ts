@@ -12,12 +12,15 @@ import {
 
 export const careerService = {
   // --- JOB POSTINGS APIs ---
+  // FIX TẠI ĐÂY: Thêm sortBy và order vào interface của params
   getJobs: async (params: {
     page?: number;
     limit?: number;
     search?: string;
     status?: string;
     type?: string;
+    sortBy?: string;
+    order?: string;
   }) => {
     return axiosInstance.get<{
       success: boolean;

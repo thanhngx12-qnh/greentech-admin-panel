@@ -2,11 +2,25 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Card, Tabs, Button, Row, Col, App as AntdApp, Spin } from "antd";
-import { useForm } from "react-hook-form";
+import {
+  Card,
+  Tabs,
+  Button,
+  Row,
+  Col,
+  App as AntdApp,
+  Spin,
+  Switch,
+  Divider,
+} from "antd";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
+import {
+  ArrowLeftOutlined,
+  SaveOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 
 import { newsFormSchema, NewsFormInputs, NewsDetail } from "@/types/news";
 import { newsService } from "@/lib/services/news.service";
@@ -18,8 +32,6 @@ import { RHFInput } from "@/components/ui/form/RHFInput";
 import { RHFSelect } from "@/components/ui/form/RHFSelect";
 import { RHFEditor } from "@/components/ui/form/RHFEditor";
 import { RHFImageUpload } from "@/components/ui/form/RHFImageUpload";
-
-import { PlusOutlined } from "@ant-design/icons";
 
 interface NewsFormProps {
   isEditing: boolean;
@@ -49,6 +61,7 @@ export default function NewsForm({
     defaultValues: {
       category_id: undefined as any,
       status: "DRAFT",
+      is_index_request: true, // Gán giá trị mặc định tại đây
       featured_image: "",
       title_vi: "",
       content_vi: "",
@@ -76,7 +89,6 @@ export default function NewsForm({
     message.success(`Đã tạo slug ${lang.toUpperCase()}`);
   };
 
-  // Fetch danh sách danh mục
   useEffect(() => {
     const fetchCats = async () => {
       try {
@@ -94,12 +106,12 @@ export default function NewsForm({
     fetchCats();
   }, [message]);
 
-  // Map initialData vào form
   useEffect(() => {
     if (isEditing && initialData) {
       reset({
         category_id: initialData.category_id,
         status: initialData.status,
+        is_index_request: true, // Reset luôn true
         featured_image: initialData.featured_image || "",
         title_vi: initialData.title_i18n?.vi || "",
         content_vi: initialData.content_i18n?.vi || "",
@@ -149,7 +161,6 @@ export default function NewsForm({
             />
           </Col>
           <Col span={12}>
-            {/* THÊM NÚT BẤM VÀO ĐÂY */}
             <RHFInput
               name={`slug_${lang}`}
               control={control}
@@ -160,7 +171,7 @@ export default function NewsForm({
                 <Button
                   type="text"
                   size="small"
-                  className="text-[#2E7D32] hover:text-[#1b6d24] flex items-center gap-1 font-medium"
+                  className="text-[#2E7D32] hover:text-[#1b6d24] font-medium"
                   onClick={() => handleManualGenerateSlug(lang)}
                 >
                   <PlusOutlined style={{ fontSize: "12px" }} /> Tạo Slug
@@ -177,8 +188,6 @@ export default function NewsForm({
           height={600}
         />
       </Card>
-
-      {/* KHỐI SEO */}
       <Card
         variant="outlined"
         title={
@@ -203,8 +212,6 @@ export default function NewsForm({
             textAreaProps={{ rows: 3 }}
             placeholder="Mô tả ngắn gọn cho công cụ tìm kiếm..."
           />
-
-          {/* Thay thế Input text bằng RHFImageUpload cho ảnh SEO */}
           <RHFImageUpload
             name={`seo_i18n.${lang}.og_image`}
             control={control}
@@ -216,7 +223,7 @@ export default function NewsForm({
   );
 
   return (
-    <Spin spinning={loadingCategories}>
+    <Spin spinning={loadingCategories} description="Đang tải danh mục...">
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
@@ -240,7 +247,6 @@ export default function NewsForm({
         </div>
 
         <Row gutter={24}>
-          {/* CỘT TRÁI: Nội dung đa ngôn ngữ */}
           <Col xs={24} lg={16}>
             <Tabs
               type="card"
@@ -248,7 +254,7 @@ export default function NewsForm({
               items={[
                 {
                   key: "vi",
-                  label: "Tiếng Việt (Mặc định)",
+                  label: "Tiếng Việt",
                   children: renderLanguageTab(
                     "vi",
                     "Tiêu đề",
@@ -263,20 +269,18 @@ export default function NewsForm({
                 },
                 {
                   key: "zh",
-                  label: "中文 (Chinese)",
+                  label: "中文",
                   children: renderLanguageTab("zh", "标题", "链接", "内容"),
                 },
               ]}
             />
           </Col>
-
-          {/* CỘT PHẢI: Cài đặt chung */}
           <Col xs={24} lg={8}>
             <Card
               variant="outlined"
               title={
                 <span className="text-[#1b1c1c] font-semibold">
-                  Cài đặt chung
+                  Cài đặt xuất bản
                 </span>
               }
               className="border-[#E0E0E0] shadow-none mb-6"
@@ -290,7 +294,6 @@ export default function NewsForm({
                   label: c.name_i18n?.vi || "N/A",
                   value: c.id,
                 }))}
-                placeholder="-- Chọn danh mục --"
               />
               <RHFSelect
                 name="status"
@@ -304,23 +307,32 @@ export default function NewsForm({
                   { label: "Lên lịch", value: "SCHEDULED" },
                 ]}
               />
+
+              <Divider className="my-4" />
+
+              <div className="flex justify-between items-center bg-green-50 p-3 rounded-[4px] border border-green-100 mb-6">
+                <div>
+                  <div className="text-[14px] font-medium text-[#0d631b]">
+                    Google Indexing
+                  </div>
+                  <div className="text-[12px] text-gray-500">
+                    Tự động đẩy URL lên Search Console
+                  </div>
+                </div>
+                <Controller
+                  name="is_index_request"
+                  control={control}
+                  render={({ field: { value, onChange } }) => (
+                    <Switch checked={value} onChange={onChange} />
+                  )}
+                />
+              </div>
+
               <RHFImageUpload
                 name="featured_image"
                 control={control}
                 label="Ảnh đại diện bài viết"
-                required
               />
-              {/* Box review ảnh */}
-              {watch("featured_image") && (
-                <div className="mt-2 rounded-[4px] overflow-hidden border border-[#E0E0E0]">
-                  <img
-                    src={watch("featured_image")}
-                    alt="Preview"
-                    className="w-full h-auto object-cover max-h-[200px]"
-                    onError={(e) => (e.currentTarget.style.display = "none")}
-                  />
-                </div>
-              )}
             </Card>
           </Col>
         </Row>
