@@ -7,18 +7,15 @@ import {
   Card,
   Tabs,
   Button,
-  Row,
-  Col,
   App as AntdApp,
   Spin,
-  Divider,
   Tag,
 } from "antd";
 import {
   UserOutlined,
   LockOutlined,
   SaveOutlined,
-  ShieldOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -43,19 +40,23 @@ export default function ProfilePage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
 
-  // 1. Form Cập nhật thông tin
+  // Logic Fix Hydration Error cho Next.js 16
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const profileForm = useForm<ProfileUpdateInputs>({
     resolver: zodResolver(profileUpdateSchema),
   });
 
-  // 2. Form Đổi mật khẩu
   const passwordForm = useForm<ChangePasswordInputs>({
     resolver: zodResolver(changePasswordSchema),
     defaultValues: { old_password: "", new_password: "", confirm_password: "" },
   });
 
-  // Fetch dữ liệu cá nhân
   useEffect(() => {
+    if (!mounted) return;
     const fetchMe = async () => {
       try {
         const res = await profileService.getMe();
@@ -70,15 +71,13 @@ export default function ProfilePage() {
       }
     };
     fetchMe();
-  }, [profileForm, message]);
+  }, [profileForm, message, mounted]);
 
-  // Xử lý cập nhật Họ tên
   const onUpdateProfile = async (data: ProfileUpdateInputs) => {
     setIsUpdating(true);
     try {
       await profileService.updateMe(data);
       message.success("Cập nhật thông tin thành công");
-      // Cập nhật lại state user tại chỗ
       if (user) setUser({ ...user, full_name: data.full_name });
     } catch (error: any) {
       message.error(error.message || "Lỗi khi cập nhật");
@@ -87,14 +86,11 @@ export default function ProfilePage() {
     }
   };
 
-  // Xử lý đổi mật khẩu
   const onChangePassword = async (data: ChangePasswordInputs) => {
     setIsUpdating(true);
     try {
       await profileService.changePassword(data);
       message.success("Đổi mật khẩu thành công. Vui lòng đăng nhập lại.");
-
-      // Theo yêu cầu API: Đăng xuất và đá về trang Login
       setTimeout(async () => {
         await authService.logout();
         router.push("/login");
@@ -116,28 +112,40 @@ export default function ProfilePage() {
       ),
       children: (
         <div className="max-w-xl">
-          <Title level={4} className="mb-6">
+          <Title level={4} className="mb-6 text-[#1b1c1c]">
             Thông tin tài khoản
           </Title>
-          <div className="mb-6">
-            <Text type="secondary" className="block mb-1">
-              Địa chỉ Email (Tên đăng nhập)
-            </Text>
-            <Text strong className="text-[16px]">
-              {user?.email}
-            </Text>
-            <Divider type="vertical" className="mx-4" />
-            <Tag color="gold" icon={<ShieldOutlined />}>
-              {user?.role}
-            </Tag>
+          <div className="mb-6 flex items-center flex-wrap gap-y-2">
+            <div className="mr-8">
+              <Text type="secondary" className="block text-[12px] mb-1">
+                Địa chỉ Email
+              </Text>
+              <Text strong className="text-[15px]">
+                {user?.email}
+              </Text>
+            </div>
+            <div>
+              <Text type="secondary" className="block text-[12px] mb-1">
+                Quyền hạn
+              </Text>
+              <Tag
+                color="gold"
+                icon={<SafetyCertificateOutlined />}
+                className="rounded-[4px]"
+              >
+                {user?.role}
+              </Tag>
+            </div>
           </div>
 
-          <form onSubmit={profileForm.handleSubmit(onUpdateProfile)}>
+          <form
+            onSubmit={profileForm.handleSubmit(onUpdateProfile)}
+            className="space-y-4"
+          >
             <RHFInput
               name="full_name"
               control={profileForm.control}
-              label="Họ và tên"
-              placeholder="Nhập họ tên của bạn"
+              label="Họ và tên hiển thị"
               required
             />
             <Button
@@ -145,7 +153,7 @@ export default function ProfilePage() {
               htmlType="submit"
               icon={<SaveOutlined />}
               loading={isUpdating}
-              className="bg-[#2E7D32] mt-2"
+              className="bg-[#2E7D32] h-10 px-6"
             >
               Lưu thay đổi
             </Button>
@@ -162,21 +170,18 @@ export default function ProfilePage() {
       ),
       children: (
         <div className="max-w-xl">
-          <Title level={4} className="mb-6">
+          <Title level={4} className="mb-6 text-[#1b1c1c]">
             Thay đổi mật khẩu
           </Title>
-          <Text type="secondary" className="block mb-6">
-            Để bảo mật tài khoản, vui lòng không chia sẻ mật khẩu cho người khác
-            và nên đổi mật khẩu định kỳ 3-6 tháng.
-          </Text>
-
-          <form onSubmit={passwordForm.handleSubmit(onChangePassword)}>
+          <form
+            onSubmit={passwordForm.handleSubmit(onChangePassword)}
+            className="space-y-4"
+          >
             <RHFInput
               name="old_password"
               control={passwordForm.control}
               label="Mật khẩu hiện tại"
               type="password"
-              placeholder="••••••••"
               required
             />
             <RHFInput
@@ -184,7 +189,6 @@ export default function ProfilePage() {
               control={passwordForm.control}
               label="Mật khẩu mới"
               type="password"
-              placeholder="Tối thiểu 6 ký tự"
               required
             />
             <RHFInput
@@ -192,7 +196,6 @@ export default function ProfilePage() {
               control={passwordForm.control}
               label="Xác nhận mật khẩu mới"
               type="password"
-              placeholder="Nhập lại mật khẩu mới"
               required
             />
             <Button
@@ -201,7 +204,7 @@ export default function ProfilePage() {
               danger
               icon={<LockOutlined />}
               loading={isUpdating}
-              className="mt-2"
+              className="h-10 px-6 mt-2"
             >
               Đổi mật khẩu
             </Button>
@@ -211,14 +214,19 @@ export default function ProfilePage() {
     },
   ];
 
+  if (!mounted) return null; // Ngăn Hydration mismatch khi chưa mount
+
   return (
-    <Spin spinning={loading} description="Đang tải dữ liệu hồ sơ...">
+    <Spin spinning={loading} description="Đang nạp dữ liệu hồ sơ...">
       <div className="mb-6">
-        <Title level={2} className="m-0 font-semibold tracking-tight">
+        <Title
+          level={2}
+          className="m-0 font-semibold tracking-tight text-[#1b1c1c]"
+        >
           Hồ sơ của tôi
         </Title>
         <Text type="secondary">
-          Quản lý thông tin định danh và các thiết lập bảo mật cá nhân
+          Cấu hình thông tin tài khoản cá nhân và mật khẩu hệ thống
         </Text>
       </div>
 
@@ -228,7 +236,7 @@ export default function ProfilePage() {
         styles={{ body: { padding: 0 } }}
       >
         <Tabs
-          tabPosition="left"
+          tabPlacement="left" // FIX: Đổi tabPosition sang tabPlacement
           items={tabItems}
           className="min-h-[500px] profile-tabs"
         />

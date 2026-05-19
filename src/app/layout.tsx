@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
-// Import thêm App từ antd và đổi tên thành AntdApp để tránh nhầm lẫn
 import { ConfigProvider, App as AntdApp } from "antd";
 import themeConfig from "@/theme/themeConfig";
 
@@ -23,11 +22,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi">
+    // THÊM suppressHydrationWarning vào đây để bỏ qua lỗi do Extension trình duyệt
+    <html lang="vi" suppressHydrationWarning>
       <body className={inter.className}>
         <AntdRegistry>
           <ConfigProvider theme={themeConfig}>
-            {/* Bọc toàn bộ ứng dụng bằng AntdApp để đồng bộ Theme cho Message, Modal, Notification */}
             <AntdApp>{children}</AntdApp>
           </ConfigProvider>
         </AntdRegistry>
