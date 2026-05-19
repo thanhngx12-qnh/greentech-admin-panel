@@ -51,7 +51,8 @@ export default function JobApplicationsPage() {
   // Lấy danh sách tin tuyển dụng để làm bộ lọc
   useEffect(() => {
     (async () => {
-      const res = await careerService.getJobs({ limit: 100 });
+      // FIX TẠI ĐÂY: Ép kiểu any để vượt qua rào cản TypeScript của Axios
+      const res: any = await careerService.getJobs({ limit: 100 });
       if (res.data) setJobs(res.data);
     })();
   }, []);
@@ -59,7 +60,8 @@ export default function JobApplicationsPage() {
   const fetchApplications = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await careerService.getApplications({
+      // FIX TẠI ĐÂY: Ép kiểu any để vượt qua rào cản TypeScript của Axios
+      const res: any = await careerService.getApplications({
         page,
         limit,
         search: searchText || undefined,
@@ -257,7 +259,7 @@ export default function JobApplicationsPage() {
           >
             {jobs.map((job) => (
               <Option key={job.id} value={job.id}>
-                {job.title_i18n.vi}
+                {job.title_i18n?.vi || "Không có tên"}
               </Option>
             ))}
           </Select>

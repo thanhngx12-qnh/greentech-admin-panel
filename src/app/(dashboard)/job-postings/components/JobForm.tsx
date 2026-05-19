@@ -49,7 +49,25 @@ export default function JobForm({ isEditing, initialData, id }: any) {
     formState: { isSubmitting },
   } = useForm<JobFormInputs>({
     resolver: zodResolver(jobFormSchema),
-    defaultValues: { status: "DRAFT", type: "FULL_TIME" },
+    defaultValues: {
+      // Khai báo đủ defaultValues để khớp 100% với Schema
+      category_id: undefined as any,
+      status: "DRAFT",
+      type: "FULL_TIME",
+      location: "",
+      salary_range: "",
+      deadline: "",
+      title_vi: "",
+      description_vi: "",
+      slug_vi: "",
+      title_en: "",
+      description_en: "",
+      slug_en: "",
+      title_zh: "",
+      description_zh: "",
+      slug_zh: "",
+      seo_i18n: { vi: {}, en: {}, zh: {} },
+    },
   });
 
   useEffect(() => {
@@ -62,11 +80,22 @@ export default function JobForm({ isEditing, initialData, id }: any) {
         if (res.success) setCategories(res.data);
         if (isEditing && initialData) {
           reset({
-            ...initialData,
-            title_vi: initialData.title_i18n?.vi,
-            description_vi: initialData.description_i18n?.vi,
-            slug_vi: initialData.slug_i18n?.vi,
-            // Tương tự cho en và zh...
+            category_id: initialData.category_id,
+            status: initialData.status,
+            type: initialData.type,
+            location: initialData.location || "",
+            salary_range: initialData.salary_range || "",
+            deadline: initialData.deadline || "",
+            title_vi: initialData.title_i18n?.vi || "",
+            description_vi: initialData.description_i18n?.vi || "",
+            slug_vi: initialData.slug_i18n?.vi || "",
+            title_en: initialData.title_i18n?.en || "",
+            description_en: initialData.description_i18n?.en || "",
+            slug_en: initialData.slug_i18n?.en || "",
+            title_zh: initialData.title_i18n?.zh || "",
+            description_zh: initialData.description_i18n?.zh || "",
+            slug_zh: initialData.slug_i18n?.zh || "",
+            seo_i18n: initialData.seo_i18n || { vi: {}, en: {}, zh: {} },
           });
         }
       } catch (err) {
@@ -244,6 +273,8 @@ export default function JobForm({ isEditing, initialData, id }: any) {
                   { label: "Toàn thời gian", value: "FULL_TIME" },
                   { label: "Bán thời gian", value: "PART_TIME" },
                   { label: "Thực tập", value: "INTERNSHIP" },
+                  { label: "Hợp đồng", value: "CONTRACT" },
+                  { label: "Freelance", value: "FREELANCE" },
                 ]}
               />
               <RHFInput
@@ -283,7 +314,7 @@ export default function JobForm({ isEditing, initialData, id }: any) {
                       placeholder="Chọn ngày"
                       value={field.value ? dayjs(field.value) : null}
                       onChange={(date) =>
-                        field.onChange(date ? date.toISOString() : null)
+                        field.onChange(date ? date.toISOString() : "")
                       }
                     />
                   )}
